@@ -9,11 +9,13 @@ import re
 import requests
 import string
 import math
+import os.path
 
 bot = commands.Bot(command_prefix='$')
 token = "NzY4MjgzMjcyOTQ5Mzk5NjEy.X4-Njg.NfyDMPVlLmgLAf8LkX9p0s04QDY"
 test_token="NzY4MzcyMDU3NDE0NTY1OTA4.X4_gPg.fg2sLq5F1ZJr9EwIgA_hiVHtfjQ"
-version="V1.0.3"
+version="V1.0.4"
+
 
 @bot.event
 async def on_message(message) :
@@ -105,6 +107,7 @@ def get_chance_multiple(mode) :
 @commands.cooldown(1, 2, commands.BucketType.default)
 @bot.command()
 async def 베팅(ctx,mode=None,moa=None) :
+    cantallin=0
     try :
         file=open("user_info.txt","r")
         lines=file.readlines()
@@ -115,15 +118,23 @@ async def 베팅(ctx,mode=None,moa=None) :
             user=line.split(',')
             if user[2]==str(ctx.author.id) :
                 money=int(user[3])
+                cantallin=int(user[4])
         file.close()
+        
         if money<=0:
             raise Exception('베팅할 돈이 없습니다.')
         if mode==None : 
             raise Exception("모드를 입력해주세요.")
         if int(mode)==6 and moa!=None:
-            await ctx.send("올인모드는 모아를 입력할수 없습니다.")
+            raise Exception("올인모드는 모아를 입력할수 없습니다.")
         if int(mode)==6 :
             moa=money
+        if cantallin==1 : 
+            if math.floor(money*0.5)<int(moa) or (int(mode)>3 and int(mode)<=6)  :
+                raise Exception("모드 1~3에서 가진돈의 절반미만으로 걸수 있습니다.")
+        else :
+            cantallin=0
+
         if moa==None :  
             raise Exception("모아를 입력해주세요.")
         if money<int(moa) or int(moa)<0 : 
@@ -145,7 +156,12 @@ async def 베팅(ctx,mode=None,moa=None) :
     else :
         end=money-int(moa)
         await ctx.send("베팅 실패!")
-    file_text=file_text.replace(f"{ctx.author.id},{'%010d'%money}",f"{ctx.author.id},{'%010d'%end}")
+        save2=random.randrange(0,100)
+        if save2<10 :
+            end+=math.floor(int(moa)*0.3)
+            await ctx.send("건 돈의 30% 지급")
+            cantallin=1
+    file_text=file_text.replace(f"{ctx.author.id},{'%010d'%money},0",f"{ctx.author.id},{'%010d'%end},{cantallin}")
     file.write(file_text)
     file.close()
 
