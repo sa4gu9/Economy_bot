@@ -12,7 +12,12 @@ import math
 
 bot = commands.Bot(command_prefix='$')
 token = "NzY4MjgzMjcyOTQ5Mzk5NjEy.X4-Njg.NfyDMPVlLmgLAf8LkX9p0s04QDY"
-version="V1.0.2.1"
+test_token="NzY4MzcyMDU3NDE0NTY1OTA4.X4_gPg.fg2sLq5F1ZJr9EwIgA_hiVHtfjQ"
+version="V1.0.3"
+
+@bot.event
+async def on_message(message) :
+    await bot.process_commands(message)
 
 @bot.event
 async def on_ready():
@@ -21,6 +26,7 @@ async def on_ready():
     print(bot.user.id)
     print("-----------")
     await bot.change_presence(status=discord.Status.online,activity=discord.Game(f'{version} $도움말'))
+
 
 
 @commands.cooldown(1, 2, commands.BucketType.default)
@@ -142,42 +148,63 @@ async def 베팅(ctx,mode=None,moa=None) :
     file_text=file_text.replace(f"{ctx.author.id},{'%010d'%money}",f"{ctx.author.id},{'%010d'%end}")
     file.write(file_text)
     file.close()
-    
+
+@bot.command()
+async def 모두(ctx) :
+    file=open("user_info.txt","r")
+    lines=file.readlines()
+    file.close()
+
+    showtext="```"
+
+    for line in lines :
+        user=line.split(',')
+        showtext+=f"{user[1]} {int(user[3])}\n"
+    showtext+="```"
+    await ctx.send(showtext)
+
     
 @commands.cooldown(1, 2, commands.BucketType.default)
 @bot.command()
 async def 기부(ctx,nickname=None,moa=None) :
-    if nickname==None:
-        raise Exception('기부할 닉네임을 입력해주세요.')
+    try :
+        if nickname==None:
+            raise Exception('기부할 닉네임을 입력해주세요.')
+            
+        if moa==None:
+            raise Exception('모아를 입력해주세요.')
         
-    if moa==None:
-        raise Exception('모아를 입력해주세요.')
-    
-    if int(moa)<0 : 
-        raise Exception('0원이하로 기부할수 없습니다.')
+        if int(moa)<=0 : 
+            raise Exception('0원이하로 기부할수 없습니다.')
 
+        
+        file=open("user_info.txt","r")
+        file_text=file.read()
+        file.seek(0)
+        lines=file.readlines()
+        file.close()
+        nicknames=[]
+        for line in lines:
+            user=line.split(',')
+            if user[2]==str(ctx.author.id) :
+                if int(user[3])<int(moa) :
+                    raise Exception("자신 보유 자산보다 많이 기부할수 없습니다.")
+            nicknames.append(str(user[1]).lower())
+        if not str(nickname) in nicknames :
+            raise Exception('닉네임을 잘못 입력했습니다.')
+        for line in lines:
+            user=line.split(',')
+            if user[1].lower()==str(nickname).lower() :
+                file_text=file_text.replace(f"{user[1]},{user[2]},{user[3]}",f"{user[1]},{user[2]},{'%010d'%(int(user[3])+int(moa))}")
+            if user[2]==str(ctx.author.id) :
+                file_text=file_text.replace(f"{user[2]},{user[3]}",f"{user[2]},{'%010d'%(int(user[3])-int(moa))}")
+        file=open("user_info.txt","w")
+        file.write(file_text)
+        file.close()
+    except Exception as e :
+        await ctx.send(f"{e}\n$기부 (닉네임) (기부할 돈)")
+        return
     
-    file=open("user_info.txt","r")
-    file_text=file.read()
-    file.seek(0)
-    lines=file.readlines()
-    file.close()
-
-    for line in lines:
-        user=line.split(',')
-        if user[2]==str(ctx.author.id) :
-            if int(user[3])<int(moa) :
-                await ctx.send("자신 보유 자산보다 많이 기부할수 없습니다.")
-                return  
-    for line in lines:
-        user=line.split(',')
-        if user[1].lower()==str(nickname).lower() :
-            file_text=file_text.replace(f"{user[1]},{user[2]},{user[3]}",f"{user[1]},{user[2]},{'%010d'%(int(user[3])+int(moa))}")
-        if user[2]==str(ctx.author.id) :
-            file_text=file_text.replace(f"{user[2]},{user[3]}",f"{user[2]},{'%010d'%(int(user[3])-int(moa))}")
-    file=open("user_info.txt","w")
-    file.write(file_text)
-    file.close()
 
     
 
@@ -192,5 +219,29 @@ async def 도움말(ctx,keyword=None) :
     else :
         await ctx.send("현재 도움말은 베팅만 지원합니다.")
 
+@commands.cooldown(1, 2, commands.BucketType.default)
+@bot.command()
+async def 경제규모(ctx,mode=None,moa=None) :
+    sum_money=0
+    file=open("user_info.txt","r")
+    lines=file.readlines()
+    file.close()
+    for line in lines :
+        user=line.split(',')
+        sum_money+=int(user[3])
+    await ctx.send(str(sum_money)+"모아")
+
+@bot.command()
+async def 닉네임(ctx):
+    file=open("user_info.txt","r")
+    lines=file.readlines()
+    file.close()
+    nickname=""
+    for line in lines :
+        user=line.split(',')
+        if int(user[2])==ctx.author.id :
+            nickname=user[1]
+    await ctx.send(f"{ctx.author.display_name}의 닉네임은 {nickname}입니다.")
+    
 
 bot.run(token)
