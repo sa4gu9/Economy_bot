@@ -12,7 +12,7 @@ import math
 
 bot = commands.Bot(command_prefix='$')
 token = "NzY4MjgzMjcyOTQ5Mzk5NjEy.X4-Njg.NfyDMPVlLmgLAf8LkX9p0s04QDY"
-version="V1.0.2"
+version="V1.0.2.1"
 
 @bot.event
 async def on_ready():
@@ -23,7 +23,7 @@ async def on_ready():
     await bot.change_presence(status=discord.Status.online,activity=discord.Game(f'{version} $도움말'))
 
 
-@commands.cooldown(1, 5, commands.BucketType.default)
+@commands.cooldown(1, 2, commands.BucketType.default)
 @bot.command()
 async def 가입(ctx,nickname=None) : 
     if nickname==None:
@@ -31,7 +31,7 @@ async def 가입(ctx,nickname=None) :
         return
     userdiscordid=[]
     nicks=[]
-    file=open("user_info.txt","a+",encoding="utf-8")
+    file=open("user_info.txt","a+")
     file.seek(0)
     lines=file.readlines()
     for line in lines:
@@ -59,7 +59,7 @@ async def 자산(ctx,nickname=None) :
     if nickname==None:
         await ctx.send("닉네임을 입력해주세요.")
         return
-    file=open("user_info.txt","r",encoding="utf-8")
+    file=open("user_info.txt","r")
     lines=file.readlines()
     money=-2000
     for line in lines :
@@ -99,17 +99,17 @@ def get_chance_multiple(mode) :
 @commands.cooldown(1, 2, commands.BucketType.default)
 @bot.command()
 async def 베팅(ctx,mode=None,moa=None) :
-    file=open("user_info.txt","r",encoding="utf-8")
-    lines=file.readlines()
-    file.seek(0)
-    file_text=file.read()
-    money=0
-    for line in lines :
-        user=line.split(',')
-        if user[2]==str(ctx.author.id) :
-            money=int(user[3])
-    file.close()
     try :
+        file=open("user_info.txt","r")
+        lines=file.readlines()
+        file.seek(0)
+        file_text=file.read()
+        money=0
+        for line in lines :
+            user=line.split(',')
+            if user[2]==str(ctx.author.id) :
+                money=int(user[3])
+        file.close()
         if money<=0:
             raise Exception('베팅할 돈이 없습니다.')
         if mode==None : 
@@ -155,25 +155,27 @@ async def 기부(ctx,nickname=None,moa=None) :
     
     if int(moa)<0 : 
         raise Exception('0원이하로 기부할수 없습니다.')
-        
-    file=open("user_info.txt","w+")
+
+    
+    file=open("user_info.txt","r")
     file_text=file.read()
     file.seek(0)
     lines=file.readlines()
+    file.close()
+
     for line in lines:
         user=line.split(',')
         if user[2]==str(ctx.author.id) :
-            if int(user[3])>=int(moa) :
-                file_text.replace(f"{user[2]},{user[3]}","{user[2]},{int(user[3])-moa}")
-            else :
+            if int(user[3])<int(moa) :
                 await ctx.send("자신 보유 자산보다 많이 기부할수 없습니다.")
-                return
+                return  
     for line in lines:
         user=line.split(',')
         if user[1].lower()==str(nickname).lower() :
-            file_text.replace(f"{user[1]},{user[2]},{user[3]}","{user[1]},{user[2]},{int(user[3])+moa}")
+            file_text=file_text.replace(f"{user[1]},{user[2]},{user[3]}",f"{user[1]},{user[2]},{'%010d'%(int(user[3])+int(moa))}")
         if user[2]==str(ctx.author.id) :
-            file_text.replace(f"{user[2]},{user[3]}","{user[2]},{int(user[3])-moa}")
+            file_text=file_text.replace(f"{user[2]},{user[3]}",f"{user[2]},{'%010d'%(int(user[3])-int(moa))}")
+    file=open("user_info.txt","w")
     file.write(file_text)
     file.close()
 
