@@ -20,7 +20,7 @@ async def on_ready():
     print(bot.user.name)
     print(bot.user.id)
     print("-----------")
-    await bot.change_presence(status=discord.Status.online,activity=discord.Game(f'{version}'))
+    await bot.change_presence(status=discord.Status.online,activity=discord.Game(f'{version} $도움말'))
 
 
 @commands.cooldown(1, 5, commands.BucketType.default)
@@ -91,12 +91,12 @@ def get_chance_multiple(mode) :
         chance=16
         multiple=4
     elif mode==6 :
-        chance=85
-        multiple=1.13
+        chance=60
+        multiple=2
            
     return chance,multiple
 
-@commands.cooldown(1, 5, commands.BucketType.default)
+@commands.cooldown(1, 2, commands.BucketType.default)
 @bot.command()
 async def 베팅(ctx,mode=None,moa=None) :
     file=open("user_info.txt","r",encoding="utf-8")
@@ -109,21 +109,24 @@ async def 베팅(ctx,mode=None,moa=None) :
         if user[2]==str(ctx.author.id) :
             money=int(user[3])
     file.close()
-    if mode==None : 
-        await ctx.send("$베팅 (모드) (모아)\n(모드 종류 : 1 80% 1.4배, 2 64% 1.8배, 3 48% 2.2배, 4 32% 2.6배, 5 16% 3배, 6 85% 1.13배(올인만 가능)")
+    try :
+        if money<=0:
+            raise Exception('베팅할 돈이 없습니다.')
+        if mode==None : 
+            raise Exception("모드를 입력해주세요.")
+        if int(mode)==6 and moa!=None:
+            await ctx.send("올인모드는 모아를 입력할수 없습니다.")
+        if int(mode)==6 :
+            moa=money
+        if moa==None :  
+            raise Exception("모아를 입력해주세요.")
+        if money<int(moa) or int(moa)<0 : 
+            raise Exception("보유량보다 많거나 0원 미만으로 베팅하실 수 없습니다.")
+        if int(mode)>6 or int(mode)<1 : 
+            raise Exception('모드를 잘못 입력했습니다.')
+    except Exception as e:
+        await ctx.send(f"{e}\n$베팅 (모드) (모아)\n(모드 종류 : 1 80% 1.2배, 2 64% 1.6배, 3 48% 2.2배, 4 32% 3배, 5 16% 4배, 6 60% 2배(올인만 가능)")
         return
-    if int(mode)==6 :
-        moa=money
-    if moa==None : 
-        await ctx.send("$베팅 (모드) (모아)\n(모드 종류 : 1 80% 1.4배, 2 64% 1.8배, 3 48% 2.2배, 4 32% 2.6배, 5 16% 3배, 6 85% 1.13배(올인만 가능)")
-        return
-    if money<int(moa) or int(moa)<0 : 
-        await ctx.author.send("보유량보다 많거나 0원 미만으로 베팅하실 수 없습니다.")
-        return    
-    if int(mode)>6 or int(mode)<1 : 
-        await ctx.send("$베팅 (모드) (모아)\n(모드 종류 : 1 80% 1.4배, 2 64% 1.8배, 3 48% 2.2배, 4 32% 2.6배, 5 16% 3배, 6 85% 1.13배(올인만 가능)")
-        return
-    
     chance,multiple=get_chance_multiple(int(mode))
     result=random.randrange(0,100)
     lose=int(moa)
@@ -141,6 +144,51 @@ async def 베팅(ctx,mode=None,moa=None) :
     file.close()
     
     
+@commands.cooldown(1, 2, commands.BucketType.default)
+@bot.command()
+async def 기부(ctx,nickname=None,moa=None) :
+    if nickname==None:
+        raise Exception('기부할 닉네임을 입력해주세요.')
+        
+    if moa==None:
+        raise Exception('모아를 입력해주세요.')
+    
+    if int(moa)<0 : 
+        raise Exception('0원이하로 기부할수 없습니다.')
+        
+    file=open("user_info.txt","w+")
+    file_text=file.read()
+    file.seek(0)
+    lines=file.readlines()
+    for line in lines:
+        user=line.split(',')
+        if user[2]==str(ctx.author.id) :
+            if int(user[3])>=int(moa) :
+                file_text.replace(f"{user[2]},{user[3]}","{user[2]},{int(user[3])-moa}")
+            else :
+                await ctx.send("자신 보유 자산보다 많이 기부할수 없습니다.")
+                return
+    for line in lines:
+        user=line.split(',')
+        if user[1].lower()==str(nickname).lower() :
+            file_text.replace(f"{user[1]},{user[2]},{user[3]}","{user[1]},{user[2]},{int(user[3])+moa}")
+        if user[2]==str(ctx.author.id) :
+            file_text.replace(f"{user[2]},{user[3]}","{user[2]},{int(user[3])-moa}")
+    file.write(file_text)
+    file.close()
+
+    
+
+
+@commands.cooldown(1, 2, commands.BucketType.default)
+@bot.command()
+async def 도움말(ctx,keyword=None) :
+    if keyword==None:
+        await ctx.send("도움말 (명령어) : 가입, 자산, 베팅, 기부")
+    elif keyword=="베팅":
+        await ctx.send("$베팅 (모드) (돈)\n모드 종류 : 1 80% 1.4배, 2 64% 1.8배, 3 48% 2.2배, 4 32% 2.6배, 5 16% 3배, 6 85% 1.13배(올인만 가능)")
+    else :
+        await ctx.send("현재 도움말은 베팅만 지원합니다.")
 
 
 bot.run(token)
