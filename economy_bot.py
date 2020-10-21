@@ -12,7 +12,7 @@ import math
 
 bot = commands.Bot(command_prefix='$')
 token = "NzY4MjgzMjcyOTQ5Mzk5NjEy.X4-Njg.NfyDMPVlLmgLAf8LkX9p0s04QDY"
-version="V1.0.1"
+version="V1.0.2"
 
 @bot.event
 async def on_ready():
