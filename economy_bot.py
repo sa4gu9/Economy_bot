@@ -14,12 +14,24 @@ import os.path
 bot = commands.Bot(command_prefix='$')
 token = "NzY4MjgzMjcyOTQ5Mzk5NjEy.X4-Njg.NfyDMPVlLmgLAf8LkX9p0s04QDY"
 test_token="NzY4MzcyMDU3NDE0NTY1OTA4.X4_gPg.fg2sLq5F1ZJr9EwIgA_hiVHtfjQ"
-version="V1.0.5.6"
-
+version="V1.0.5.7"
+cancommand=True
+getnotice=False
 
 @bot.event
 async def on_message(message) :
-    await bot.process_commands(message)
+    global getnotice
+    if cancommand :
+        await bot.process_commands(message)
+    else :
+        if message.author.id==382938103435886592 :
+            await bot.process_commands(message)
+        else :
+            if not getnotice :
+                await message.channel.send("현재 할수없는 상태입니다.")
+                getnotice=True
+            else :
+                getnotice=False
 
 @bot.event
 async def on_ready():
@@ -170,6 +182,12 @@ async def 모두(ctx) :
     showtext+="```"
     await ctx.send(showtext)
 
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.default)
+async def 일시정지(ctx) :
+    global cancommand
+    if ctx.author.id==382938103435886592 :
+        cancommand=not cancommand
 
 @commands.cooldown(1, 0.5, commands.BucketType.default)
 @bot.command()
@@ -191,8 +209,7 @@ async def 복권(ctx) :
                 return
             else :
                 file_text=file_text.replace(f"{user[2]},{user[3]}",f"{user[2]},{'%010d'%(int(user[3])-1000)}")
-        else :
-            userid.append(user[2])
+        userid.append(user[2])
     if not str(ctx.author.id) in userid :
         await ctx.send("가입을 해주세요.")
         return
@@ -384,4 +401,4 @@ async def 닉네임(ctx):
     await ctx.send(f"{ctx.author.display_name}의 닉네임은 {nickname}입니다.")
     
 
-bot.run(token)
+bot.run(test_token)
