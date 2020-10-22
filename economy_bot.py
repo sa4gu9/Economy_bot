@@ -14,7 +14,7 @@ import os.path
 bot = commands.Bot(command_prefix='$')
 token = "NzY4MjgzMjcyOTQ5Mzk5NjEy.X4-Njg.NfyDMPVlLmgLAf8LkX9p0s04QDY"
 test_token="NzY4MzcyMDU3NDE0NTY1OTA4.X4_gPg.fg2sLq5F1ZJr9EwIgA_hiVHtfjQ"
-version="V1.0.5.3"
+version="V1.0.5.4"
 
 
 @bot.event
@@ -187,6 +187,7 @@ async def 복권(ctx) :
         if user[2]==str(ctx.author.id) :
             if int(user[3])<1000:
                 await ctx.send("복권을 살 돈이 부족합니다.(1000모아)")
+                return
             else :
                 file_text=file_text.replace(f"{user[2]},{user[3]}",f"{user[2]},{int(user[3])-1000}")
     while i<3 : 
