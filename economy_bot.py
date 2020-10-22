@@ -19,15 +19,15 @@ cancommand=True
 getnotice=False
 
 @bot.event
-async def on_message(message) :
+async def on_message(tempmessage) :
     global getnotice
-    if len(message)>50 :
-        message.delete()
+    if len(tempmessage)>50 :
+        tempmessage.delete()
     if cancommand :
-        await bot.process_commands(message)
+        await bot.process_commands(tempmessage)
     else :
-        if message.author.id==382938103435886592 :
-            await bot.process_commands(message)
+        if tempmessage.author.id==382938103435886592 :
+            await bot.process_commands(tempmessage)
         else :
             if not getnotice :
                 channel=bot.get_channel(768343875001516074)
