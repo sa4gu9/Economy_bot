@@ -14,7 +14,7 @@ import os.path
 bot = commands.Bot(command_prefix='$')
 token = "NzY4MjgzMjcyOTQ5Mzk5NjEy.X4-Njg.NfyDMPVlLmgLAf8LkX9p0s04QDY"
 test_token="NzY4MzcyMDU3NDE0NTY1OTA4.X4_gPg.fg2sLq5F1ZJr9EwIgA_hiVHtfjQ"
-version="V1.0.5.1"
+version="V1.0.5.2"
 
 
 @bot.event
@@ -212,6 +212,7 @@ async def 복권(ctx) :
 async def CheckLotto(filename,ctx) :
     file=open(filename,"r")
     lines=file.readlines()
+    await ctx.send(f"{len(lines)}/10")
     if len(lines)>=10 :
         result=[0,0,0]
         special=0
@@ -265,9 +266,12 @@ async def CheckLotto(filename,ctx) :
             file=open(f"user_info{ctx.guild.id}.txt","w")
             file.write(file_text)
             file.close()
+            user=bot.get_user(int(submit[4]))
             if place!=0:
-                user=bot.get_user(int(submit[4]))
                 await user.send(f"{place}등 당첨! {getprice}모아 지급!")
+            else :
+                await user.send(f"당첨 실패!")
+
         os.remove(filename)
             
 
@@ -358,4 +362,4 @@ async def 닉네임(ctx):
     await ctx.send(f"{ctx.author.display_name}의 닉네임은 {nickname}입니다.")
     
 
-bot.run(token)
+bot.run(test_token)
