@@ -14,7 +14,7 @@ import os.path
 bot = commands.Bot(command_prefix='$')
 token = "NzY4MjgzMjcyOTQ5Mzk5NjEy.X4-Njg.NfyDMPVlLmgLAf8LkX9p0s04QDY"
 test_token="NzY4MzcyMDU3NDE0NTY1OTA4.X4_gPg.fg2sLq5F1ZJr9EwIgA_hiVHtfjQ"
-version="V1.0.5.4"
+version="V1.0.5.5"
 
 
 @bot.event
@@ -39,7 +39,7 @@ async def 가입(ctx,nickname=None) :
         return
     userdiscordid=[]
     nicks=[]
-    file=open(f"user_info{ctx.guild.id}.txt","a+")
+    file=open(f"user_info{ctx.guild.id}","a+")
     file.seek(0)
     lines=file.readlines()
     for line in lines:
@@ -56,7 +56,7 @@ async def 가입(ctx,nickname=None) :
     result1=""
     for i in range(20) : 
         result1=result1+random.choice(string_pool)
-    file.write(f"{result1},{nickname},{ctx.author.id},{'%010d'%10000},0,\n")
+    file.write(f"{result1},{nickname},{ctx.author.id},{'%010d'%20000},0,\n")
     await ctx.send("가입 성공!")
     file.close()
 
@@ -66,7 +66,7 @@ async def 자산(ctx,nickname=None) :
     if nickname==None:
         await ctx.send("닉네임을 입력해주세요.")
         return
-    file=open(f"user_info{ctx.guild.id}.txt","r")
+    file=open(f"user_info{ctx.guild.id}","r")
     lines=file.readlines()
     money=-2000
     for line in lines :
@@ -107,7 +107,7 @@ def get_chance_multiple(mode) :
 @bot.command()
 async def 베팅(ctx,mode=None,moa=None) :
     try :
-        file=open(f"user_info{ctx.guild.id}.txt","r")
+        file=open(f"user_info{ctx.guild.id}","r")
         lines=file.readlines()
         file.seek(0)
         file_text=file.read()
@@ -140,7 +140,7 @@ async def 베팅(ctx,mode=None,moa=None) :
     result=random.randrange(0,100)
     lose=int(moa)
     end=0
-    file=open(f"user_info{ctx.guild.id}.txt","w")
+    file=open(f"user_info{ctx.guild.id}","w")
     if result<chance : 
         profit=math.floor(multiple*int(moa))
         end=money-lose+profit
@@ -158,7 +158,7 @@ async def 베팅(ctx,mode=None,moa=None) :
 
 @bot.command()
 async def 모두(ctx) :
-    file=open(f"user_info{ctx.guild.id}.txt","r")
+    file=open(f"user_info{ctx.guild.id}","r")
     lines=file.readlines()
     file.close()
 
@@ -174,7 +174,7 @@ async def 모두(ctx) :
 @commands.cooldown(1, 0.5, commands.BucketType.default)
 @bot.command()
 async def 복권(ctx) :
-    filename=f"user_info{ctx.guild.id}.txt"
+    filename=f"user_info{ctx.guild.id}"
     i=0
     number=[0,0,0]
     num=0
@@ -201,13 +201,13 @@ async def 복권(ctx) :
     for num in number :
         writetext+=str(num)+","
     writetext+=str(ctx.author.id)+",\n"
-    file=open(f"lotto_{ctx.guild.id}.txt","a")
+    file=open(f"lotto_{ctx.guild.id}","a")
     file.write(writetext)
     file.close()
-    file=open(f"user_info{ctx.guild.id}.txt","w")
+    file=open(f"user_info{ctx.guild.id}","w")
     file.write(file_text)
     file.close()
-    await CheckLotto(f"lotto_{ctx.guild.id}.txt",ctx)
+    await CheckLotto(f"lotto_{ctx.guild.id}",ctx)
 
 
 async def CheckLotto(filename,ctx) :
@@ -239,6 +239,7 @@ async def CheckLotto(filename,ctx) :
             correct=0
             place=0
             getprice=0
+            user=None
             while i<3:
                 if result[i]==int(submit[i]) :
                     correct+=1
@@ -258,7 +259,7 @@ async def CheckLotto(filename,ctx) :
                 place=4
                 getprice=math.floor(totalSell*0.1)
 
-            file=open(f"user_info{ctx.guild.id}.txt","r")
+            file=open(f"user_info{ctx.guild.id}","r")
             file_text=file.read()
             file.seek(0)
             lines=file.readlines()
@@ -267,9 +268,10 @@ async def CheckLotto(filename,ctx) :
                 user=line.split(',')
                 file_text=file_text.replace(f"{submit[4]},{user[3]}",f"{submit[4]},{int(user[3])+getprice}")
                 nickname=user[1]
-            file=open(f"user_info{ctx.guild.id}.txt","w")
+            file=open(f"user_info{ctx.guild.id}","w")
             file.write(file_text)
             file.close()
+            print(submit[4])
             user=bot.get_user(int(submit[4]))
             if place!=0:
                 await user.send(f"{place}등 당첨! {getprice}모아 지급!")
@@ -286,7 +288,7 @@ async def CheckLotto(filename,ctx) :
 # @bot.command()
 # async def 복권확인(ctx) :
 #     showtext="```"
-#     file=open(f"lotto_{ctx.guild.id}.txt","r")
+#     file=open(f"lotto_{ctx.guild.id}","r")
 #     lines=file.readlines()
 #     for line in lines:
 #         user=line.split(',')
@@ -310,7 +312,7 @@ async def 기부(ctx,nickname=None,moa=None) :
             raise Exception('0원이하로 기부할수 없습니다.')
 
         
-        file=open(f"user_info{ctx.guild.id}.txt","r")
+        file=open(f"user_info{ctx.guild.id}","r")
         file_text=file.read()
         file.seek(0)
         lines=file.readlines()
@@ -330,7 +332,7 @@ async def 기부(ctx,nickname=None,moa=None) :
                 file_text=file_text.replace(f"{user[1]},{user[2]},{user[3]}",f"{user[1]},{user[2]},{'%010d'%(int(user[3])+int(moa))}")
             if user[2]==str(ctx.author.id) :
                 file_text=file_text.replace(f"{user[2]},{user[3]}",f"{user[2]},{'%010d'%(int(user[3])-int(moa))}")
-        file=open(f"user_info{ctx.guild.id}.txt","w")
+        file=open(f"user_info{ctx.guild.id}","w")
         file.write(file_text)
         file.close()
     except Exception as e :
@@ -355,7 +357,7 @@ async def 도움말(ctx,keyword=None) :
 @bot.command()
 async def 경제규모(ctx,mode=None,moa=None) :
     sum_money=0
-    file=open(f"user_info{ctx.guild.id}.txt","r")
+    file=open(f"user_info{ctx.guild.id}","r")
     lines=file.readlines()
     file.close()
     for line in lines :
@@ -365,7 +367,7 @@ async def 경제규모(ctx,mode=None,moa=None) :
 
 @bot.command()
 async def 닉네임(ctx):
-    file=open(f"user_info{ctx.guild.id}.txt","r")
+    file=open(f"user_info{ctx.guild.id}","r")
     lines=file.readlines()
     file.close()
     nickname=""
