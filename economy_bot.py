@@ -14,7 +14,7 @@ import os.path
 bot = commands.Bot(command_prefix='$')
 token = "NzY4MjgzMjcyOTQ5Mzk5NjEy.X4-Njg.NfyDMPVlLmgLAf8LkX9p0s04QDY"
 test_token="NzY4MzcyMDU3NDE0NTY1OTA4.X4_gPg.fg2sLq5F1ZJr9EwIgA_hiVHtfjQ"
-version="V1.0.5"
+version="V1.0.5.1"
 
 
 @bot.event
@@ -46,7 +46,6 @@ async def 가입(ctx,nickname=None) :
         user=line.split(',')
         userdiscordid.append(user[2])
         nicks.append(user[1].lower())
-        print(userdiscordid)
     if str(ctx.author.id) in userdiscordid :
         await ctx.send("이미 가입하였습니다.")
         return
@@ -107,7 +106,6 @@ def get_chance_multiple(mode) :
 @commands.cooldown(1, 2, commands.BucketType.default)
 @bot.command()
 async def 베팅(ctx,mode=None,moa=None) :
-    cantallin=0
     try :
         file=open(f"user_info{ctx.guild.id}.txt","r")
         lines=file.readlines()
@@ -118,7 +116,6 @@ async def 베팅(ctx,mode=None,moa=None) :
             user=line.split(',')
             if user[2]==str(ctx.author.id) :
                 money=int(user[3])
-                cantallin=int(user[4])
         file.close()
         
         if money<=0:
@@ -129,11 +126,6 @@ async def 베팅(ctx,mode=None,moa=None) :
             raise Exception("올인모드는 모아를 입력할수 없습니다.")
         if int(mode)==6 :
             moa=money
-        if cantallin==1 : 
-            if math.floor(money*0.5)<int(moa) or (int(mode)>3 and int(mode)<=6)  :
-                raise Exception("모드 1~3에서 가진돈의 절반미만으로 걸수 있습니다.")
-        else : 
-            cantallin=0
 
         if moa==None :  
             raise Exception("모아를 입력해주세요.")
@@ -148,7 +140,7 @@ async def 베팅(ctx,mode=None,moa=None) :
     result=random.randrange(0,100)
     lose=int(moa)
     end=0
-    file=open("user_info.txt","w")
+    file=open(f"user_info{ctx.guild.id}.txt","w")
     if result<chance : 
         profit=math.floor(multiple*int(moa))
         end=money-lose+profit
@@ -160,8 +152,7 @@ async def 베팅(ctx,mode=None,moa=None) :
         if save2<10 :
             end+=math.floor(int(moa)*0.3)
             await ctx.send("건 돈의 30% 지급")
-            cantallin=1
-    file_text=file_text.replace(f"{ctx.author.id},{'%010d'%money},0",f"{ctx.author.id},{'%010d'%end},{cantallin}")
+    file_text=file_text.replace(f"{ctx.author.id},{'%010d'%money}",f"{ctx.author.id},{'%010d'%end}")
     file.write(file_text)
     file.close()
 
@@ -219,10 +210,8 @@ async def 복권(ctx) :
 
 
 async def CheckLotto(filename,ctx) :
-    print("test")
     file=open(filename,"r")
     lines=file.readlines()
-    print(lines)
     if len(lines)>=10 :
         result=[0,0,0]
         special=0
@@ -235,7 +224,6 @@ async def CheckLotto(filename,ctx) :
             if not num in result :
                 result[i]=num
                 i+=1
-                print(result)
             result.sort()
         special=random.choice(result)
         #endregion
@@ -247,12 +235,10 @@ async def CheckLotto(filename,ctx) :
             correct=0
             place=0
             getprice=0
-            print(str(submit)+"   "+str(result))
             while i<3:
                 if result[i]==int(submit[i]) :
                     correct+=1
                 i+=1
-                print(correct)
             
             if correct==3 :
                 if special==int(submit[3]):
