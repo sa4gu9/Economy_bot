@@ -362,4 +362,4 @@ async def 닉네임(ctx):
     await ctx.send(f"{ctx.author.display_name}의 닉네임은 {nickname}입니다.")
     
 
-bot.run(test_token)
+bot.run(token)
