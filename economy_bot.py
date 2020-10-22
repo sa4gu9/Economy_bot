@@ -14,13 +14,15 @@ import os.path
 bot = commands.Bot(command_prefix='$')
 token = "NzY4MjgzMjcyOTQ5Mzk5NjEy.X4-Njg.NfyDMPVlLmgLAf8LkX9p0s04QDY"
 test_token="NzY4MzcyMDU3NDE0NTY1OTA4.X4_gPg.fg2sLq5F1ZJr9EwIgA_hiVHtfjQ"
-version="V1.0.5.7"
+version="V1.0.5.8"
 cancommand=True
 getnotice=False
 
 @bot.event
 async def on_message(message) :
     global getnotice
+    if len(message)>50 :
+        message.delete()
     if cancommand :
         await bot.process_commands(message)
     else :
@@ -28,7 +30,8 @@ async def on_message(message) :
             await bot.process_commands(message)
         else :
             if not getnotice :
-                await message.channel.send("현재 할수없는 상태입니다.")
+                channel=bot.get_channel(768343875001516074)
+                await channel.send("현재 할수없는 상태입니다.")
                 getnotice=True
             else :
                 getnotice=False
