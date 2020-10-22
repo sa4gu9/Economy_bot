@@ -194,7 +194,7 @@ async def 복권(ctx) :
         else :
             userid.append(user[2])
     if not str(ctx.author.id) in userid :
-        ctx.send("가입을 해주세요.")
+        await ctx.send("가입을 해주세요.")
         return
     while i<3 : 
         num=random.randint(1,6)
