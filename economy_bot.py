@@ -14,7 +14,7 @@ import os.path
 bot = commands.Bot(command_prefix='$')
 token = "NzY4MjgzMjcyOTQ5Mzk5NjEy.X4-Njg.NfyDMPVlLmgLAf8LkX9p0s04QDY"
 test_token="NzY4MzcyMDU3NDE0NTY1OTA4.X4_gPg.fg2sLq5F1ZJr9EwIgA_hiVHtfjQ"
-version="V1.0.5.2"
+version="V1.0.5.3"
 
 
 @bot.event
@@ -144,7 +144,7 @@ async def 베팅(ctx,mode=None,moa=None) :
     if result<chance : 
         profit=math.floor(multiple*int(moa))
         end=money-lose+profit
-        await ctx.send("베팅 성공!")              
+        await ctx.send("베팅 성공!")
     else :
         end=money-int(moa)
         await ctx.send("베팅 실패!")
@@ -171,7 +171,7 @@ async def 모두(ctx) :
     await ctx.send(showtext)
 
 
-@commands.cooldown(1, 5, commands.BucketType.default)
+@commands.cooldown(1, 0.5, commands.BucketType.default)
 @bot.command()
 async def 복권(ctx) :
     filename=f"user_info{ctx.guild.id}.txt"
@@ -213,7 +213,9 @@ async def CheckLotto(filename,ctx) :
     file=open(filename,"r")
     lines=file.readlines()
     await ctx.send(f"{len(lines)}/10")
+    nickname=""
     if len(lines)>=10 :
+        print()
         result=[0,0,0]
         special=0
         totalSell=float(len(lines)*1000)
@@ -263,12 +265,14 @@ async def CheckLotto(filename,ctx) :
             for line in lines :
                 user=line.split(',')
                 file_text=file_text.replace(f"{submit[4]},{user[3]}",f"{submit[4]},{int(user[3])+getprice}")
+                nickname=user[1]
             file=open(f"user_info{ctx.guild.id}.txt","w")
             file.write(file_text)
             file.close()
             user=bot.get_user(int(submit[4]))
             if place!=0:
                 await user.send(f"{place}등 당첨! {getprice}모아 지급!")
+                await ctx.send(f"{nickname} {place}등 당첨!")
             else :
                 await user.send(f"당첨 실패!")
 
@@ -277,8 +281,17 @@ async def CheckLotto(filename,ctx) :
 
     
             
-
-
+# @commands.cooldown(1, 0.5, commands.BucketType.default)
+# @bot.command()
+# async def 복권확인(ctx) :
+#     showtext="```"
+#     file=open(f"lotto_{ctx.guild.id}.txt","r")
+#     lines=file.readlines()
+#     for line in lines:
+#         user=line.split(',')
+#         if user[3]==str(ctx.author.id):
+#             showtext+=
+            
 
         
     
