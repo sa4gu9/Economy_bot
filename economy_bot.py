@@ -14,7 +14,7 @@ import os.path
 bot = commands.Bot(command_prefix='$')
 token = "NzY4MjgzMjcyOTQ5Mzk5NjEy.X4-Njg.NfyDMPVlLmgLAf8LkX9p0s04QDY"
 test_token="NzY4MzcyMDU3NDE0NTY1OTA4.X4_gPg.fg2sLq5F1ZJr9EwIgA_hiVHtfjQ"
-version="V1.0.5.5"
+version="V1.0.5.6"
 
 
 @bot.event
@@ -182,6 +182,7 @@ async def 복권(ctx) :
     file_text=file.read()
     file.seek(0)
     lines=file.readlines()
+    userid=[]
     for line in lines :
         user=line.split(',')
         if user[2]==str(ctx.author.id) :
@@ -189,7 +190,12 @@ async def 복권(ctx) :
                 await ctx.send("복권을 살 돈이 부족합니다.(1000모아)")
                 return
             else :
-                file_text=file_text.replace(f"{user[2]},{user[3]}",f"{user[2]},{int(user[3])-1000}")
+                file_text=file_text.replace(f"{user[2]},{user[3]}",f"{user[2]},{'%010d'%(int(user[3])-1000)}")
+        else :
+            userid.append(user[2])
+    if not str(ctx.author.id) in userid :
+        ctx.send("가입을 해주세요.")
+        return
     while i<3 : 
         num=random.randint(1,6)
         if not num in number :
@@ -266,7 +272,7 @@ async def CheckLotto(filename,ctx) :
             file.close()
             for line in lines :
                 user=line.split(',')
-                file_text=file_text.replace(f"{submit[4]},{user[3]}",f"{submit[4]},{int(user[3])+getprice}")
+                file_text=file_text.replace(f"{submit[4]},{user[3]}",f"{submit[4]},{'%010d'%(int(user[3])+getprice)}")
                 nickname=user[1]
             file=open(f"user_info{ctx.guild.id}","w")
             file.write(file_text)
