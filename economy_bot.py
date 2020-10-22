@@ -14,27 +14,32 @@ import os.path
 bot = commands.Bot(command_prefix='$')
 token = "NzY4MjgzMjcyOTQ5Mzk5NjEy.X4-Njg.NfyDMPVlLmgLAf8LkX9p0s04QDY"
 test_token="NzY4MzcyMDU3NDE0NTY1OTA4.X4_gPg.fg2sLq5F1ZJr9EwIgA_hiVHtfjQ"
-version="V1.0.5.8"
+version="V1.0.5.9"
 cancommand=True
 getnotice=False
 
 @bot.event
 async def on_message(tempmessage) :
     global getnotice
-    if len(tempmessage.content)>50 :
+    if len(tempmessage.content)>50 and tempmessage.author.id!=768283272949399612 :
         await tempmessage.delete()
-    if cancommand :
-        await bot.process_commands(tempmessage)
-    else :
-        if tempmessage.author.id==382938103435886592 :
+
+    if str(tempmessage.content).startswith('$') :
+        if cancommand :
             await bot.process_commands(tempmessage)
         else :
-            if not getnotice :
-                channel=bot.get_channel(768343875001516074)
-                await channel.send("현재 할수없는 상태입니다.")
-                getnotice=True
+            if tempmessage.author.id==382938103435886592 :
+                await bot.process_commands(tempmessage)
             else :
-                getnotice=False
+                if str(tempmessage.content).startswith('$') :
+                    if not getnotice :
+                        channel=bot.get_channel(768343875001516074)
+                        await channel.send("현재 할수없는 상태입니다.")
+                        getnotice=True
+                    else :
+                        getnotice=False
+
+    
 
 @bot.event
 async def on_ready():
@@ -191,10 +196,15 @@ async def 일시정지(ctx) :
     global cancommand
     if ctx.author.id==382938103435886592 :
         cancommand=not cancommand
+        if cancommand : 
+            await ctx.send("명령어 사용이 가능합니다.")
+        else :
+            await ctx.send("명령어 사용이 불가능합니다.")
 
 @commands.cooldown(1, 0.5, commands.BucketType.default)
 @bot.command()
 async def 복권(ctx) :
+    nickname=""
     filename=f"user_info{ctx.guild.id}"
     i=0
     number=[0,0,0]
@@ -206,6 +216,7 @@ async def 복권(ctx) :
     userid=[]
     for line in lines :
         user=line.split(',')
+        nickname=user[1]
         if user[2]==str(ctx.author.id) :
             if int(user[3])<1000:
                 await ctx.send("복권을 살 돈이 부족합니다.(1000모아)")
@@ -223,6 +234,7 @@ async def 복권(ctx) :
             i+=1
     number.sort()
     number.append(random.choice(number))
+    await ctx.send(user[1]+"   "+str(number))
     writetext=""
     for num in number :
         writetext+=str(num)+","
@@ -258,7 +270,7 @@ async def CheckLotto(filename,ctx) :
         special=random.choice(result)
         #endregion
 
-
+        await ctx.send(f"당첨 번호 : {result[0]},{result[1]},{result[2]},{special}")
         for line in lines :
             submit=line.split(',')
             i=0
@@ -300,7 +312,7 @@ async def CheckLotto(filename,ctx) :
             print(submit[4])
             user=bot.get_user(int(submit[4]))
             if place!=0:
-                await user.send(f"{place}등 당첨! {getprice}모아 지급!")
+                await user.send(f"{submit[0]},{submit[1]},{submit[2]},{submit[3]}    {place}등 당첨! {getprice}모아 지급!")
                 await ctx.send(f"{nickname} {place}등 당첨!")
             else :
                 await user.send("당첨 실패!")
@@ -310,16 +322,18 @@ async def CheckLotto(filename,ctx) :
 
     
             
-# @commands.cooldown(1, 0.5, commands.BucketType.default)
-# @bot.command()
-# async def 복권확인(ctx) :
-#     showtext="```"
-#     file=open(f"lotto_{ctx.guild.id}","r")
-#     lines=file.readlines()
-#     for line in lines:
-#         user=line.split(',')
-#         if user[3]==str(ctx.author.id):
-#             showtext+=
+@commands.cooldown(1, 0.5, commands.BucketType.default)
+@bot.command()
+async def 복권확인(ctx) :
+    showtext="```"
+    file=open(f"lotto_{ctx.guild.id}","r")
+    lines=file.readlines()
+    for line in lines:
+        user=line.split(',')
+        if user[3]==str(ctx.author.id):
+            showtext+=f"{user[0]},{user[1]},{user[2]},{user[3]}"
+    showtext+="```"
+    await ctx.send(showtext)
             
 
         
@@ -402,6 +416,10 @@ async def 닉네임(ctx):
         if int(user[2])==ctx.author.id :
             nickname=user[1]
     await ctx.send(f"{ctx.author.display_name}의 닉네임은 {nickname}입니다.")
+
+@bot.command()
+async def 강화(ctx) :
+    await ctx.send("준비중입니다.")
     
 
 bot.run(token)
