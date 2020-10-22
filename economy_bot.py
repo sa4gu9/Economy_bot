@@ -274,7 +274,7 @@ async def CheckLotto(filename,ctx) :
                 await user.send(f"{place}등 당첨! {getprice}모아 지급!")
                 await ctx.send(f"{nickname} {place}등 당첨!")
             else :
-                await user.send(f"당첨 실패!")
+                await user.send("당첨 실패!")
 
         os.remove(filename)
             
