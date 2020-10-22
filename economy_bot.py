@@ -21,7 +21,7 @@ getnotice=False
 @bot.event
 async def on_message(tempmessage) :
     global getnotice
-    if len(tempmessage)>50 :
+    if len(tempmessage.content)>50 :
         tempmessage.delete()
     if cancommand :
         await bot.process_commands(tempmessage)
