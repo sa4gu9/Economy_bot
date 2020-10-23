@@ -14,7 +14,7 @@ import os.path
 bot = commands.Bot(command_prefix='$')
 
 token=""
-version="V1.0.5.21"
+version="V1.0.5.22"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -39,15 +39,16 @@ async def on_message(tempmessage) :
 
     if str(tempmessage.content).startswith('$') :
         if cancommand :
-            await bot.process_commands(tempmessage)
+            if tempmessage.channel.id!=768343875001516074 :
+                await tempmessage.channel.send("봇 전용 채널에서만 사용 가능합니다.")
+                return
+            else :
+                await bot.process_commands(tempmessage)
         else :
             if tempmessage.author.id==382938103435886592 :
                 await bot.process_commands(tempmessage)
             else :
                 if str(tempmessage.content).startswith('$') :
-                    if tempmessage.channel.id==768343875001516074 :
-                        await tempmessage.channel.send("봇 전용 채널에서만 사용 가능합니다.")
-                        return
                     if not getnotice  :
                         channel=bot.get_channel(768343875001516074)
                         await channel.send("현재 일시정지 상태입니다.")
