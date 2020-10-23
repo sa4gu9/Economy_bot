@@ -16,7 +16,7 @@ token = "NzY4MjgzMjcyOTQ5Mzk5NjEy.X4-Njg.NfyDMPVlLmgLAf8LkX9p0s04QDY"
 test_token="NzY4MzcyMDU3NDE0NTY1OTA4.X4_gPg.fg2sLq5F1ZJr9EwIgA_hiVHtfjQ"
 version="V1.0.5.11"
 cancommand=True
-canLotto=true
+canLotto=True
 getnotice=False
 
 @bot.event
