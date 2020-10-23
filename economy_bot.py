@@ -14,8 +14,9 @@ import os.path
 bot = commands.Bot(command_prefix='$')
 token = "NzY4MjgzMjcyOTQ5Mzk5NjEy.X4-Njg.NfyDMPVlLmgLAf8LkX9p0s04QDY"
 test_token="NzY4MzcyMDU3NDE0NTY1OTA4.X4_gPg.fg2sLq5F1ZJr9EwIgA_hiVHtfjQ"
-version="V1.0.5.10"
+version="V1.0.5.11"
 cancommand=True
+canLotto=true
 getnotice=False
 
 @bot.event
@@ -204,6 +205,10 @@ async def 일시정지(ctx) :
 @commands.cooldown(1, 0.5, commands.BucketType.default)
 @bot.command()
 async def 복권(ctx) :
+    global canLotto
+    if not canLotto :
+        await ctx.send("마감되었습니다.")
+        return
     nickname=""
     filename=f"user_info{ctx.guild.id}"
     i=0
@@ -234,7 +239,7 @@ async def 복권(ctx) :
             i+=1
     number.sort()
     number.append(random.choice(number))
-    await ctx.send(user[1]+"   "+str(number))
+    await ctx.send(nickname+"   "+str(number))
     writetext=""
     for num in number :
         writetext+=str(num)+","
@@ -247,14 +252,14 @@ async def 복권(ctx) :
     file.close()
     await CheckLotto(f"lotto_{ctx.guild.id}",ctx)
 
-
 async def CheckLotto(filename,ctx) :
+    global canLotto
     file=open(filename,"r")
     lines=file.readlines()
     await ctx.send(f"{len(lines)}/10")
     nickname=""
     if len(lines)>=10 :
-        print()
+        canLotto=False
         result=[0,0,0]
         special=0
         totalSell=float(len(lines)*1000)
@@ -317,7 +322,7 @@ async def CheckLotto(filename,ctx) :
                 await ctx.send(f"{nickname} {place}등 당첨!")
             else :
                 await user.send("당첨 실패!")
-
+        canLotto=True
         os.remove(filename)
             
 
@@ -331,7 +336,7 @@ async def 복권확인(ctx) :
     lines=file.readlines()
     for line in lines:
         user=line.split(',')
-        if user[3]==str(ctx.author.id):
+        if user[4]==str(ctx.author.id):
             showtext+=f"{user[0]},{user[1]},{user[2]},{user[3]}"
     showtext+="```"
     await ctx.send(showtext)
