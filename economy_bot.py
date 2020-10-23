@@ -14,7 +14,7 @@ import os.path
 bot = commands.Bot(command_prefix='$')
 token = "NzY4MjgzMjcyOTQ5Mzk5NjEy.X4-Njg.NfyDMPVlLmgLAf8LkX9p0s04QDY"
 test_token="NzY4MzcyMDU3NDE0NTY1OTA4.X4_gPg.fg2sLq5F1ZJr9EwIgA_hiVHtfjQ"
-version="V1.0.5.16"
+version="V1.0.5.17"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -33,10 +33,12 @@ async def on_message(tempmessage) :
                 await bot.process_commands(tempmessage)
             else :
                 if str(tempmessage.content).startswith('$') :
-                    if not getnotice :
+                    if not getnotice  :
                         channel=bot.get_channel(768343875001516074)
-                        await channel.send("현재 할수없는 상태입니다.")
+                        await channel.send("현재 일시정지 상태입니다.")
                         getnotice=True
+                    elif tempmessage.channel.id(768343875001516074) :
+                        await ctx.send("봇 전용 채널에서만 사용 가능합니다.")
                     else :
                         getnotice=False
 
@@ -313,7 +315,7 @@ async def CheckLotto(filename,ctx) :
             file.close()
             for sub in userdata :
                 cuser=sub.split(',')
-                file_text=file_text.replace(f"{cuser[4]},{cuser[3]}",f"{cuser[4]},{'%010d'%(int(cuser[3])+getprice)}")
+                file_text=file_text.replace(f"{cuser[4]},{'%010d'%int(cuser[3])}",f"{cuser[4]},{'%010d'%(int(cuser[3])+getprice)}")
                 if submit[4]==cuser[2]:
                     nickname=cuser[1]
             file=open(f"user_info{ctx.guild.id}","w")
