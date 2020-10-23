@@ -14,7 +14,7 @@ import os.path
 bot = commands.Bot(command_prefix='$')
 
 token=""
-version="V1.0.5.19"
+version="V1.0.5.20"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -45,12 +45,13 @@ async def on_message(tempmessage) :
                 await bot.process_commands(tempmessage)
             else :
                 if str(tempmessage.content).startswith('$') :
+                    if tempmessage.channel.id(768343875001516074) :
+                        await tempmessage.channel.send("봇 전용 채널에서만 사용 가능합니다.")
+                        return
                     if not getnotice  :
                         channel=bot.get_channel(768343875001516074)
                         await channel.send("현재 일시정지 상태입니다.")
-                        getnotice=True
-                    elif tempmessage.channel.id(768343875001516074) :
-                        await tempmessage.channel.send("봇 전용 채널에서만 사용 가능합니다.")
+                        getnotice=True                    
                     else :
                         getnotice=False
 
@@ -275,7 +276,7 @@ async def CheckLotto(filename,ctx) :
     lines=file.readlines()
     await ctx.send(f"{len(lines)}/10")
     showtext="```"
-    if len(lines)>=10 :
+    if len(lines)>=Lottocool :
         canLotto=False
         result=[0,0,0]
         special=0
@@ -441,12 +442,17 @@ async def 닉네임(ctx):
 
 @bot.command()
 async def 강화(ctx) : 
+    embed=discord.Embed(title="강화",description="준비중입니다.")
+    embed.add_field(name="가입 :clap:",value="강화 가입을 합니다.")
+    embed.add_field(name="강화 :hammer:",value="강화를 합니다.")
+    await ctx.send(embed=embed)
+    return
     #file=open(f"user_info{ctx.guild.id}","r")
     await ctx.send("준비중입니다.")
-    return
     file=open(f"reinforce{ctx.guild.id}","w")
     file_text=file.read()
     lines=file.readlines()
+
      
 
 bot.run(token)
