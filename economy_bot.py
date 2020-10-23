@@ -14,7 +14,7 @@ import os.path
 bot = commands.Bot(command_prefix='$')
 token = "NzY4MjgzMjcyOTQ5Mzk5NjEy.X4-Njg.NfyDMPVlLmgLAf8LkX9p0s04QDY"
 test_token="NzY4MzcyMDU3NDE0NTY1OTA4.X4_gPg.fg2sLq5F1ZJr9EwIgA_hiVHtfjQ"
-version="V1.0.5.13"
+version="V1.0.5.14"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -133,10 +133,12 @@ async def 베팅(ctx,mode=None,moa=None) :
         file.seek(0)
         file_text=file.read()
         money=0
+        nickname=""
         for line in lines :
             user=line.split(',')
             if user[2]==str(ctx.author.id) :
                 money=int(user[3])
+                nickname=user[1]
         file.close()
         
         if money<=0:
@@ -165,10 +167,10 @@ async def 베팅(ctx,mode=None,moa=None) :
     if result<chance : 
         profit=math.floor(multiple*int(moa))
         end=money-lose+profit
-        await ctx.send("베팅 성공!")
+        await ctx.send(f"{nickname} 베팅 성공!")
     else :
         end=money-int(moa)
-        await ctx.send("베팅 실패!")
+        await ctx.send(f"{nickname} 베팅 실패!")
         save2=random.randrange(0,100)
         if save2<10 :
             end+=math.floor(int(moa)*0.3)
@@ -202,7 +204,7 @@ async def 일시정지(ctx) :
         else :
             await ctx.send("명령어 사용이 불가능합니다.")
 
-@commands.cooldown(1, 0.5, commands.BucketType.default)
+@commands.cooldown(1, 10, commands.BucketType.user)
 @bot.command()
 async def 복권(ctx) :
     global canLotto
@@ -258,6 +260,7 @@ async def CheckLotto(filename,ctx) :
     lines=file.readlines()
     await ctx.send(f"{len(lines)}/10")
     nickname=""
+    showtext="```"
     if len(lines)>=10 :
         canLotto=False
         result=[0,0,0]
@@ -274,8 +277,8 @@ async def CheckLotto(filename,ctx) :
         result.sort()
         special=random.choice(result)
         #endregion
-
-        await ctx.send(f"당첨 번호 : {result[0]},{result[1]},{result[2]},{special}")
+    
+        showtext+=f"당첨 번호 : {result[0]},{result[1]},{result[2]},{special}"
         for line in lines :
             submit=line.split(',')
             i=0
@@ -319,9 +322,9 @@ async def CheckLotto(filename,ctx) :
             user=bot.get_user(int(submit[4]))
             print(user)
             if place!=0:
-                await ctx.send(f"{nickname} {place}등 당첨! {getprice}모아 지급!")
-        canLotto=True
+                await ctx.send(f"{nickname} {place}등 당첨! {getprice}모아 지급! [{submit[0]},{submit[1]},{submit[2]},{submit[3]}")
         os.remove(filename)
+        canLotto=True
             
 
     
@@ -335,7 +338,7 @@ async def 복권확인(ctx) :
     for line in lines:
         user=line.split(',')
         if user[4]==str(ctx.author.id):
-            showtext+=f"{user[0]},{user[1]},{user[2]},{user[3]}"
+            showtext+=f"{user[0]},{user[1]},{user[2]},{user[3]}\n"
     showtext+="```"
     await ctx.send(showtext)
             
