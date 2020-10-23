@@ -14,14 +14,14 @@ import os.path
 bot = commands.Bot(command_prefix='$')
 token = "NzY4MjgzMjcyOTQ5Mzk5NjEy.X4-Njg.NfyDMPVlLmgLAf8LkX9p0s04QDY"
 test_token="NzY4MzcyMDU3NDE0NTY1OTA4.X4_gPg.fg2sLq5F1ZJr9EwIgA_hiVHtfjQ"
-version="V1.0.5.9"
+version="V1.0.5.10"
 cancommand=True
 getnotice=False
 
 @bot.event
 async def on_message(tempmessage) :
     global getnotice
-    if len(tempmessage.content)>50 and tempmessage.author.id!=768283272949399612 :
+    if len(tempmessage.content)>50 and tempmessage.author.id!=768283272949399612 and tempmessage.channel.id==768343875001516074 :
         await tempmessage.delete()
 
     if str(tempmessage.content).startswith('$') :
@@ -216,8 +216,8 @@ async def 복권(ctx) :
     userid=[]
     for line in lines :
         user=line.split(',')
-        nickname=user[1]
         if user[2]==str(ctx.author.id) :
+            nickname=user[1]
             if int(user[3])<1000:
                 await ctx.send("복권을 살 돈이 부족합니다.(1000모아)")
                 return
@@ -305,7 +305,8 @@ async def CheckLotto(filename,ctx) :
             for line in lines :
                 user=line.split(',')
                 file_text=file_text.replace(f"{submit[4]},{user[3]}",f"{submit[4]},{'%010d'%(int(user[3])+getprice)}")
-                nickname=user[1]
+                if str(ctx.author.id)==user[2]:
+                    nickname=user[1]
             file=open(f"user_info{ctx.guild.id}","w")
             file.write(file_text)
             file.close()
@@ -418,8 +419,9 @@ async def 닉네임(ctx):
     await ctx.send(f"{ctx.author.display_name}의 닉네임은 {nickname}입니다.")
 
 @bot.command()
-async def 강화(ctx) :
+async def 강화(ctx) : 
+    #file=open(f"user_info{ctx.guild.id}","r")
     await ctx.send("준비중입니다.")
-    
+     
 
 bot.run(token)
