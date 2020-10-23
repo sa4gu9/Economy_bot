@@ -12,12 +12,24 @@ import math
 import os.path
 
 bot = commands.Bot(command_prefix='$')
-token = "NzY4MjgzMjcyOTQ5Mzk5NjEy.X4-Njg.NfyDMPVlLmgLAf8LkX9p0s04QDY"
-test_token="NzY4MzcyMDU3NDE0NTY1OTA4.X4_gPg.fg2sLq5F1ZJr9EwIgA_hiVHtfjQ"
-version="V1.0.5.18"
+
+token=""
+version="V1.0.5.19"
 cancommand=True
 canLotto=True
 getnotice=False
+
+testmode=False
+Lottocool=0
+
+if testmode :
+    Lottocool=1
+    token="NzY4MzcyMDU3NDE0NTY1OTA4.X4_gPg.fg2sLq5F1ZJr9EwIgA_hiVHtfjQ"
+else :
+    Lottocool=10
+    token = "NzY4MjgzMjcyOTQ5Mzk5NjEy.X4-Njg.NfyDMPVlLmgLAf8LkX9p0s04QDY"
+
+
 
 @bot.event
 async def on_message(tempmessage) :
@@ -207,7 +219,7 @@ async def 일시정지(ctx) :
             await ctx.send("명령어 사용이 불가능합니다.")
 
 #region 복권
-@commands.cooldown(1, 1, commands.BucketType.user)
+@commands.cooldown(1, Lottocool, commands.BucketType.user)
 @bot.command()
 async def 복권(ctx) :
     global canLotto
@@ -431,6 +443,10 @@ async def 닉네임(ctx):
 async def 강화(ctx) : 
     #file=open(f"user_info{ctx.guild.id}","r")
     await ctx.send("준비중입니다.")
+    return
+    file=open(f"reinforce{ctx.guild.id}","w")
+    file_text=file.read()
+    lines=file.readlines()
      
 
 bot.run(token)
