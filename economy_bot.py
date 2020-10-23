@@ -14,7 +14,7 @@ import os.path
 bot = commands.Bot(command_prefix='$')
 token = "NzY4MjgzMjcyOTQ5Mzk5NjEy.X4-Njg.NfyDMPVlLmgLAf8LkX9p0s04QDY"
 test_token="NzY4MzcyMDU3NDE0NTY1OTA4.X4_gPg.fg2sLq5F1ZJr9EwIgA_hiVHtfjQ"
-version="V1.0.5.15"
+version="V1.0.5.16"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -204,7 +204,8 @@ async def 일시정지(ctx) :
         else :
             await ctx.send("명령어 사용이 불가능합니다.")
 
-@commands.cooldown(1, 10, commands.BucketType.user)
+#region 복권
+@commands.cooldown(1, 1, commands.BucketType.user)
 @bot.command()
 async def 복권(ctx) :
     global canLotto
@@ -259,9 +260,8 @@ async def CheckLotto(filename,ctx) :
     file=open(filename,"r")
     lines=file.readlines()
     await ctx.send(f"{len(lines)}/10")
-    nickname=""
     showtext="```"
-    if len(lines)>=10 :
+    if len(lines)>=3 :
         canLotto=False
         result=[0,0,0]
         special=0
@@ -280,6 +280,7 @@ async def CheckLotto(filename,ctx) :
     
         showtext+=f"당첨 번호 : {result[0]},{result[1]},{result[2]},{special}\n"
         for line in lines :
+            nickname=""
             submit=line.split(',')
             i=0
             correct=0
@@ -305,22 +306,19 @@ async def CheckLotto(filename,ctx) :
                 place=4
                 getprice=math.floor(totalSell*0.2)
 
-            file=open(f"user_info{ctx.guild.id}","r")
-            file_text=file.read()
-            file.seek(0)
-            lines=file.readlines()
+            userfile=open(f"user_info{ctx.guild.id}","r")
+            file_text=userfile.read()
+            userfile.seek(0)
+            userdata=userfile.readlines()
             file.close()
-            for line in lines :
-                user=line.split(',')
-                file_text=file_text.replace(f"{submit[4]},{user[3]}",f"{submit[4]},{'%010d'%(int(user[3])+getprice)}")
-                if str(ctx.author.id)==user[2]:
-                    nickname=user[1]
+            for sub in userdata :
+                cuser=sub.split(',')
+                file_text=file_text.replace(f"{cuser[4]},{cuser[3]}",f"{cuser[4]},{'%010d'%(int(cuser[3])+getprice)}")
+                if submit[4]==cuser[2]:
+                    nickname=cuser[1]
             file=open(f"user_info{ctx.guild.id}","w")
             file.write(file_text)
             file.close()
-            print(submit[4])
-            user=bot.get_user(int(submit[4]))
-            print(user)
             if place!=0:
                 showtext+=f"{nickname} {place}등 당첨! {getprice}모아 지급! [{submit[0]},{submit[1]},{submit[2]},{submit[3]}]\n"
         showtext+="```"
@@ -344,8 +342,7 @@ async def 복권확인(ctx) :
     showtext+="```"
     await ctx.send(showtext)
             
-
-        
+#endregion   
     
 @commands.cooldown(1, 2, commands.BucketType.default)
 @bot.command()
