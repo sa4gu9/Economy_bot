@@ -205,7 +205,7 @@ async def 일시정지(ctx) :
             await ctx.send("명령어 사용이 불가능합니다.")
 
 #region 복권
-@commands.cooldown(1, 1, commands.BucketType.user)
+@commands.cooldown(1, 10, commands.BucketType.user)
 @bot.command()
 async def 복권(ctx) :
     global canLotto
@@ -261,7 +261,7 @@ async def CheckLotto(filename,ctx) :
     lines=file.readlines()
     await ctx.send(f"{len(lines)}/10")
     showtext="```"
-    if len(lines)>=3 :
+    if len(lines)>=10 :
         canLotto=False
         result=[0,0,0]
         special=0
