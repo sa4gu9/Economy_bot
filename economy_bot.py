@@ -263,7 +263,7 @@ async def CheckLotto(filename,ctx) :
     lines=file.readlines()
     await ctx.send(f"{len(lines)}/10")
     showtext="```"
-    if len(lines)>=3 :
+    if len(lines)>=10 :
         canLotto=False
         result=[0,0,0]
         special=0
