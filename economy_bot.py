@@ -14,7 +14,7 @@ import os.path
 bot = commands.Bot(command_prefix='$')
 token = "NzY4MjgzMjcyOTQ5Mzk5NjEy.X4-Njg.NfyDMPVlLmgLAf8LkX9p0s04QDY"
 test_token="NzY4MzcyMDU3NDE0NTY1OTA4.X4_gPg.fg2sLq5F1ZJr9EwIgA_hiVHtfjQ"
-version="V1.0.5.17"
+version="V1.0.5.18"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -38,7 +38,7 @@ async def on_message(tempmessage) :
                         await channel.send("현재 일시정지 상태입니다.")
                         getnotice=True
                     elif tempmessage.channel.id(768343875001516074) :
-                        await ctx.send("봇 전용 채널에서만 사용 가능합니다.")
+                        await tempmessage.channel.send("봇 전용 채널에서만 사용 가능합니다.")
                     else :
                         getnotice=False
 
@@ -207,7 +207,7 @@ async def 일시정지(ctx) :
             await ctx.send("명령어 사용이 불가능합니다.")
 
 #region 복권
-@commands.cooldown(1, 10, commands.BucketType.user)
+@commands.cooldown(1, 1, commands.BucketType.user)
 @bot.command()
 async def 복권(ctx) :
     global canLotto
@@ -263,7 +263,7 @@ async def CheckLotto(filename,ctx) :
     lines=file.readlines()
     await ctx.send(f"{len(lines)}/10")
     showtext="```"
-    if len(lines)>=10 :
+    if len(lines)>=3 :
         canLotto=False
         result=[0,0,0]
         special=0
@@ -314,10 +314,12 @@ async def CheckLotto(filename,ctx) :
             userdata=userfile.readlines()
             file.close()
             for sub in userdata :
-                cuser=sub.split(',')
-                file_text=file_text.replace(f"{cuser[4]},{'%010d'%int(cuser[3])}",f"{cuser[4]},{'%010d'%(int(cuser[3])+getprice)}")
+                cuser=sub.split(',')               
                 if submit[4]==cuser[2]:
                     nickname=cuser[1]
+                    print(f"{cuser[2]},{'%010d'%(int(cuser[3]))}")
+                    print(f"{cuser[2]},{'%010d'%(int(cuser[3])+getprice)}")
+                    file_text=file_text.replace(f"{cuser[2]},{'%010d'%(int(cuser[3]))}",f"{cuser[2]},{'%010d'%(int(cuser[3])+getprice)}")
             file=open(f"user_info{ctx.guild.id}","w")
             file.write(file_text)
             file.close()
@@ -431,4 +433,4 @@ async def 강화(ctx) :
     await ctx.send("준비중입니다.")
      
 
-bot.run(token)
+bot.run(test_token)
