@@ -433,4 +433,4 @@ async def 강화(ctx) :
     await ctx.send("준비중입니다.")
      
 
-bot.run(test_token)
+bot.run(token)
