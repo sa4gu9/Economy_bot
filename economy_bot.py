@@ -14,7 +14,7 @@ import os.path
 bot = commands.Bot(command_prefix='$')
 
 token=""
-version="V1.0.5.20"
+version="V1.0.5.21"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -45,7 +45,7 @@ async def on_message(tempmessage) :
                 await bot.process_commands(tempmessage)
             else :
                 if str(tempmessage.content).startswith('$') :
-                    if tempmessage.channel.id(768343875001516074) :
+                    if tempmessage.channel.id==768343875001516074 :
                         await tempmessage.channel.send("봇 전용 채널에서만 사용 가능합니다.")
                         return
                     if not getnotice  :
