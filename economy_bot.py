@@ -14,7 +14,7 @@ import os.path
 bot = commands.Bot(command_prefix='$')
 token = "NzY4MjgzMjcyOTQ5Mzk5NjEy.X4-Njg.NfyDMPVlLmgLAf8LkX9p0s04QDY"
 test_token="NzY4MzcyMDU3NDE0NTY1OTA4.X4_gPg.fg2sLq5F1ZJr9EwIgA_hiVHtfjQ"
-version="V1.0.5.12"
+version="V1.0.5.13"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -284,7 +284,7 @@ async def CheckLotto(filename,ctx) :
             getprice=0
             user=None
             while i<3:
-                if result[i]==int(submit[i]) :
+                if int(submit[i]) in result :
                     correct+=1
                 i+=1
             
