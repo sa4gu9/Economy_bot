@@ -14,7 +14,7 @@ import os.path
 bot = commands.Bot(command_prefix='$')
 token = "NzY4MjgzMjcyOTQ5Mzk5NjEy.X4-Njg.NfyDMPVlLmgLAf8LkX9p0s04QDY"
 test_token="NzY4MzcyMDU3NDE0NTY1OTA4.X4_gPg.fg2sLq5F1ZJr9EwIgA_hiVHtfjQ"
-version="V1.0.5.14"
+version="V1.0.5.15"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -278,7 +278,7 @@ async def CheckLotto(filename,ctx) :
         special=random.choice(result)
         #endregion
     
-        showtext+=f"당첨 번호 : {result[0]},{result[1]},{result[2]},{special}"
+        showtext+=f"당첨 번호 : {result[0]},{result[1]},{result[2]},{special}\n"
         for line in lines :
             submit=line.split(',')
             i=0
@@ -294,16 +294,16 @@ async def CheckLotto(filename,ctx) :
             if correct==3 :
                 if special==int(submit[3]):
                     place=1
-                    getprice=math.floor(totalSell*1.2)
+                    getprice=math.floor(totalSell*1.5)
                 else :
                     place=2
-                    getprice=math.floor(totalSell*0.3)
+                    getprice=math.floor(totalSell*0.5)
             elif correct==2:
                 place=3
-                getprice=math.floor(totalSell*0.2)
+                getprice=math.floor(totalSell*0.3)
             elif correct==1:
                 place=4
-                getprice=math.floor(totalSell*0.1)
+                getprice=math.floor(totalSell*0.2)
 
             file=open(f"user_info{ctx.guild.id}","r")
             file_text=file.read()
@@ -322,7 +322,9 @@ async def CheckLotto(filename,ctx) :
             user=bot.get_user(int(submit[4]))
             print(user)
             if place!=0:
-                await ctx.send(f"{nickname} {place}등 당첨! {getprice}모아 지급! [{submit[0]},{submit[1]},{submit[2]},{submit[3]}")
+                showtext+=f"{nickname} {place}등 당첨! {getprice}모아 지급! [{submit[0]},{submit[1]},{submit[2]},{submit[3]}]\n"
+        showtext+="```"
+        await ctx.send(showtext)
         os.remove(filename)
         canLotto=True
             
