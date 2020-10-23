@@ -14,7 +14,7 @@ import os.path
 bot = commands.Bot(command_prefix='$')
 token = "NzY4MjgzMjcyOTQ5Mzk5NjEy.X4-Njg.NfyDMPVlLmgLAf8LkX9p0s04QDY"
 test_token="NzY4MzcyMDU3NDE0NTY1OTA4.X4_gPg.fg2sLq5F1ZJr9EwIgA_hiVHtfjQ"
-version="V1.0.5.11"
+version="V1.0.5.12"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -271,7 +271,7 @@ async def CheckLotto(filename,ctx) :
             if not num in result :
                 result[i]=num
                 i+=1
-            result.sort()
+        result.sort()
         special=random.choice(result)
         #endregion
 
@@ -317,11 +317,9 @@ async def CheckLotto(filename,ctx) :
             file.close()
             print(submit[4])
             user=bot.get_user(int(submit[4]))
+            print(user)
             if place!=0:
-                await user.send(f"{submit[0]},{submit[1]},{submit[2]},{submit[3]}    {place}등 당첨! {getprice}모아 지급!")
-                await ctx.send(f"{nickname} {place}등 당첨!")
-            else :
-                await user.send("당첨 실패!")
+                await ctx.send(f"{nickname} {place}등 당첨! {getprice}모아 지급!")
         canLotto=True
         os.remove(filename)
             
