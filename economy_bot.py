@@ -14,7 +14,7 @@ import os.path
 bot = commands.Bot(command_prefix='$')
 
 token=""
-version="V1.0.5.22"
+version="V1.0.6"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -39,7 +39,7 @@ async def on_message(tempmessage) :
 
     if str(tempmessage.content).startswith('$') :
         if cancommand :
-            if tempmessage.channel.id!=768343875001516074 :
+            if tempmessage.channel.id!=768343875001516074 and tempmessage.channel.id!=709647685417697372 :
                 await tempmessage.channel.send("봇 전용 채널에서만 사용 가능합니다.")
                 return
             else :
@@ -66,6 +66,14 @@ async def on_ready():
     print("-----------")
     await bot.change_presence(status=discord.Status.online,activity=discord.Game(f'{version} $도움말'))
 
+
+# @bot.event
+# async def on_reaction_add(reaction,user) :
+#     if user.bot:
+#         return 
+#     if str(reaction.emoji)=="🔨":
+#         print(1+1+1)
+#         await user.send("f4d6a5sf1456as")
 
 
 @commands.cooldown(1, 2, commands.BucketType.default)
@@ -139,6 +147,11 @@ def get_chance_multiple(mode) :
         multiple=2
            
     return chance,multiple
+
+
+@bot.command()
+async def 버전(ctx) :
+    await ctx.send(version)
 
 @commands.cooldown(1, 2, commands.BucketType.default)
 @bot.command()
@@ -446,13 +459,21 @@ async def 강화(ctx) :
     embed=discord.Embed(title="강화",description="준비중입니다.")
     embed.add_field(name="가입 :clap:",value="강화 가입을 합니다.")
     embed.add_field(name="강화 :hammer:",value="강화를 합니다.")
-    await ctx.send(embed=embed)
+    msg = await ctx.send(embed=embed)
+    await msg.add_reaction("👏")
+    await msg.add_reaction("🔨")
     return
     #file=open(f"user_info{ctx.guild.id}","r")
     await ctx.send("준비중입니다.")
     file=open(f"reinforce{ctx.guild.id}","w")
     file_text=file.read()
     lines=file.readlines()
+
+@bot.command()
+async def 한강(ctx) : 
+    file=open("hanriver.txt","r",encoding="utf-8")
+    text=file.read()
+    await ctx.send(text)
 
      
 
