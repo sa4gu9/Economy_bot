@@ -14,20 +14,25 @@ import os.path
 bot = commands.Bot(command_prefix='$')
 
 token=""
-version="V1.0.7.1"
+version="V1.0.7.2"
 cancommand=True
 canLotto=True
 getnotice=False
 
 testmode=False
 Lottocool=0
+Lottomax=3
 
 if testmode :
+    giveMcool=1
     Lottocool=1
     token="NzY4MzcyMDU3NDE0NTY1OTA4.X4_gPg.fg2sLq5F1ZJr9EwIgA_hiVHtfjQ"
     version+=" TEST"
+    Lottomax=10
 else :
-    Lottocool=10
+    giveMcool=60
+    Lottocool=16
+    Lottomax=3
     token = "NzY4MjgzMjcyOTQ5Mzk5NjEy.X4-Njg.NfyDMPVlLmgLAf8LkX9p0s04QDY"
     
 
@@ -36,8 +41,8 @@ else :
 @bot.event
 async def on_message(tempmessage) :
     global getnotice
-    if tempmessage.author.id!=768283272949399612 and tempmessage.channel.id!=768343875001516074 and tempmessage.author.id!=768372057414565908 :
-        if len(tempmessage.content)>50 :
+    if tempmessage.author.id!=768283272949399612 and tempmessage.channel.id==768343875001516074 and tempmessage.author.id!=768372057414565908 :
+        if len(tempmessage.content)>50 :    
             await tempmessage.delete()
 
     if str(tempmessage.content).startswith('$') :
@@ -74,8 +79,118 @@ async def on_ready():
 async def on_reaction_add(reaction,user) :
     if user.bot :
         return
+    if str(reaction.emoji)=="👏":
+        #await singforce(user)
+        await reaction.message.channel.send(reaction.message.content)
     if str(reaction.emoji)=="🔨":
         await reaction.message.channel.send(reaction.message.content)
+
+
+async def singforce(user) : 
+    await user.send(user.id)
+
+def get_fail(level):
+    temp=0
+    for i in range(level) :
+        if i==0:
+            temp=0
+        else :
+            temp+=0.1*i
+
+    return temp
+
+def get_need(level):
+    temp=[0,0,0,0,0,0]
+    temp2=0
+    for i in range(level):
+        if i<3 :
+            temp[i]=1
+            temp2=1
+        elif i<6 :
+            temp[i]=2
+            temp2=2
+        else :
+            temp2=sum(temp)
+            temp[0]=temp[1]
+            temp[1]=temp[2]
+            temp[2]=temp[3]
+            temp[3]=temp[4]
+            temp[4]=temp[5]
+            temp[5]=temp2
+    return temp2
+
+async def doforce(ctx):
+    level = 1
+    cri_success=0.0
+    success=0.0
+    not_change=0.0
+    fail=0.0
+    destroy=0.0
+    result=0.0
+    change=0
+
+
+    moa=500
+    level=1
+
+    need=get_need(level)
+    if need>moa :
+        ctx.author.send(f"{need-moa}모아가 부족합니다.")
+    if level == 30 :
+        await ctx.author.send("이미 의문의 물건 +30을 가지고 있습니다.")
+        return
+    elif level == 0 :
+        await ctx.author.send("의문의 물건을 가지고 있지 않습니다.")
+        return
+
+    if level !=29 :
+        cri_success=0.05*(30-level)
+    else :
+        cri_success=0.0
+
+    if level==1 :
+        destroy=0.0
+    else :
+        destroy=0.73*(level-29)+20
+
+    success=100-3.2*level
+    fail=get_fail(level)
+
+    not_change=100 - cri_success - success - fail - destroy
+
+    result=random.random()*100
+
+    print(result)
+
+    if result<cri_success :
+        print(f"{result}  {cri_success}")
+        change=2        
+    elif result<cri_success + success :
+        print(f"{result}  {cri_success+success}")
+        change=1
+    elif result<cri_success+success + not_change :
+        print(f"{result}  {cri_success+success+ not_change}")
+        change=0
+    elif result < cri_success + success + not_change + fail :
+        print(f"{result}  {cri_success+success+ not_change+ fail}")
+        change=-1
+    else :
+        change=-10
+    
+    print(change)
+
+    if change!=-10 :
+        sql=f"update user_info set item5=item5+{change},moa=moa-{need} where discorduserid={ctx.author.id}"
+        if change>0 :
+            await ctx.send(f"강화 레벨 {level}에서 {change} 상승! 현재 레벨 : {level+change}")
+        elif change<0 :
+            await ctx.send(f"강화 레벨 {level}에서 {-change} 감소! 현재 레벨 : {level+change}")
+        else :
+            await ctx.send(f"강화 레벨 {level}에서 변동 없음! 현재 레벨 : {level}")      
+    else :
+        sql=f"update user_info set item5=0,moa=moa-{need} where discorduserid={ctx.author.id}"
+        await ctx.send(f"의문의 물건 +{level} 파괴...")
+    
 
 
 @commands.cooldown(1, 2, commands.BucketType.default)
@@ -238,58 +353,66 @@ async def 일시정지(ctx) :
 #region 복권
 @commands.cooldown(1, Lottocool, commands.BucketType.user)
 @bot.command()
-async def 복권(ctx) :
+async def 복권(ctx,amount=1) :
     global canLotto
+    global Lottomax
+    showtext="```"
     if not canLotto :
         await ctx.send("마감되었습니다.")
         return
     nickname=""
     filename=f"user_info{ctx.guild.id}"
-    i=0
-    number=[0,0,0]
-    num=0
-    file=open(filename,"r")
-    file_text=file.read()
-    file.seek(0)
-    lines=file.readlines()
-    userid=[]
-    for line in lines :
-        user=line.split(',')
-        if user[2]==str(ctx.author.id) :
-            nickname=user[1]
-            if int(user[3])<1000:
-                await ctx.send("복권을 살 돈이 부족합니다.(1000모아)")
-                return
-            else :
-                file_text=file_text.replace(f"{user[2]},{user[3]}",f"{user[2]},{'%010d'%(int(user[3])-1000)}")
-        userid.append(user[2])
-    if not str(ctx.author.id) in userid :
-        await ctx.send("가입을 해주세요.")
+    if int(amount)>Lottomax:
+        await ctx.send(f"한번에 {Lottomax}개까지 구매 가능합니다.")
         return
-    while i<3 : 
-        num=random.randint(1,6)
-        if not num in number :
-            number[i]=num
-            i+=1
-    number.sort()
-    number.append(random.choice(number))
-    await ctx.send(nickname+"   "+str(number))
-    writetext=""
-    for num in number :
-        writetext+=str(num)+","
-    writetext+=str(ctx.author.id)+",\n"
-    file=open(f"lotto_{ctx.guild.id}","a")
-    file.write(writetext)
-    file.close()
-    file=open(f"user_info{ctx.guild.id}","w")
-    file.write(file_text)
-    file.close()
+    for num in range(int(amount)) :
+        i=0
+        number=[0,0,0]
+        num=0
+        file=open(filename,"r")
+        file_text=file.read()
+        file.seek(0)
+        lines=file.readlines()
+        userid=[]
+        for line in lines :
+            user=line.split(',')
+            if user[2]==str(ctx.author.id) :
+                nickname=user[1]
+                if int(user[3])<1000:
+                    await ctx.send("복권을 살 돈이 부족합니다.(1000모아)")
+                    return
+                else :
+                    file_text=file_text.replace(f"{user[2]},{user[3]}",f"{user[2]},{'%010d'%(int(user[3])-1000)}")
+            userid.append(user[2])
+        if not str(ctx.author.id) in userid :
+            await ctx.send("가입을 해주세요.")
+            return
+        while i<3 : 
+            num=random.randint(1,6)
+            if not num in number :
+                number[i]=num
+                i+=1
+        number.sort()
+        number.append(random.choice(number))
+        showtext+=nickname+"   "+str(number)+"\n"
+        writetext=""
+        for num in number :
+            writetext+=str(num)+","
+        writetext+=str(ctx.author.id)+",\n"
+        file=open(f"lotto_{ctx.guild.id}","a")
+        file.write(writetext)
+        file.close()
+        file=open(f"user_info{ctx.guild.id}","w")
+        file.write(file_text)
+        file.close()
+    showtext+="```"
+    await ctx.send(showtext)
     await CheckLotto(f"lotto_{ctx.guild.id}",ctx)
 
 async def CheckLotto(filename,ctx) :
     global canLotto
     global Lottocool
-    price=[0,0,0,0]
+    winner=[[],[],[],[]]
 
     file=open(filename,"r")
     lines=file.readlines()
@@ -324,24 +447,24 @@ async def CheckLotto(filename,ctx) :
                 if int(submit[i]) in result :
                     correct+=1
                 i+=1
-            
-            if correct==3 :
-                if special==int(submit[3]):
-                    place=1
-                    getprice=math.floor(totalSell*1.5)
-                    price[0]+=1
-                else :
-                    place=2
-                    getprice=math.floor(totalSell*0.5)
-                    price[1]+=1
-            elif correct==2:
-                place=3
-                getprice=math.floor(totalSell*0.3)
-                price[2]+=1
-            elif correct==1:
-                place=4
-                getprice=math.floor(totalSell*0.2)
-                price[3]+=1
+            if correct>0:
+                if correct==3 :
+                    if special==int(submit[3]):
+                        place=1
+                        getprice=math.floor(totalSell*1.5)
+                        winner[3].append(submit[4])
+                    else :
+                        place=2
+                        getprice=math.floor(totalSell*0.5)
+                        winner[2].append(submit[4])
+                elif correct==2:
+                    place=3
+                    getprice=math.floor(totalSell*0.3)
+                    winner[1].append(submit[4])
+                elif correct==1:
+                    place=4
+                    getprice=math.floor(totalSell*0.2)
+                    winner[0].append(submit[4])
 
             userfile=open(f"user_info{ctx.guild.id}","r")
             file_text=userfile.read()
@@ -463,12 +586,16 @@ async def 닉네임(ctx):
             nickname=user[1]
     await ctx.send(f"{ctx.author.display_name}의 닉네임은 {nickname}입니다.")
 
+forceMsg=[]
+
 @bot.command()
 async def 강화(ctx) : 
+    global forceMsg
     embed=discord.Embed(title="강화",description="준비중입니다.")
     embed.add_field(name="가입 :clap:",value="강화 가입을 합니다.")
     embed.add_field(name="강화 :hammer:",value="강화를 합니다.")
-    msg = await ctx.send(embed=embed,content=ctx.author.display_name)
+    msg=await ctx.send(embed=embed,content=ctx.author.display_name)
+    forceMsg.append(msg)
     await msg.add_reaction("👏")
     await msg.add_reaction("🔨")
     return
@@ -494,7 +621,7 @@ async def 한강(ctx) :
 
     await ctx.send(text+f"\n\n\n현재 한강 수온{lf_items}```")
 
-@commands.cooldown(1, 60, commands.BucketType.user)
+@commands.cooldown(1, giveMcool, commands.BucketType.user)
 @bot.command()
 async def 구걸(ctx) :
     file=open(f"user_info{ctx.guild.id}","r")
