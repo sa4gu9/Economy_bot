@@ -25,10 +25,11 @@ Lottocool=0
 if testmode :
     Lottocool=1
     token="NzY4MzcyMDU3NDE0NTY1OTA4.X4_gPg.fg2sLq5F1ZJr9EwIgA_hiVHtfjQ"
+    version+=" TEST"
 else :
     Lottocool=10
     token = "NzY4MjgzMjcyOTQ5Mzk5NjEy.X4-Njg.NfyDMPVlLmgLAf8LkX9p0s04QDY"
-    version+=" TEST"
+    
 
 
 
