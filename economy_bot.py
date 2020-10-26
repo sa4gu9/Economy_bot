@@ -14,7 +14,7 @@ import os.path
 bot = commands.Bot(command_prefix='$')
 
 token=""
-version="V1.0.7"
+version="V1.0.7.1"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -288,9 +288,12 @@ async def 복권(ctx) :
 
 async def CheckLotto(filename,ctx) :
     global canLotto
+    global Lottocool
+    price=[0,0,0,0]
+
     file=open(filename,"r")
     lines=file.readlines()
-    await ctx.send(f"{len(lines)}/10")
+    await ctx.send(f"{len(lines)}/{Lottocool}")
     showtext="```"
     if len(lines)>=Lottocool :
         canLotto=False
@@ -317,7 +320,6 @@ async def CheckLotto(filename,ctx) :
             correct=0
             place=0
             getprice=0
-            user=None
             while i<3:
                 if int(submit[i]) in result :
                     correct+=1
@@ -327,15 +329,19 @@ async def CheckLotto(filename,ctx) :
                 if special==int(submit[3]):
                     place=1
                     getprice=math.floor(totalSell*1.5)
+                    price[0]+=1
                 else :
                     place=2
                     getprice=math.floor(totalSell*0.5)
+                    price[1]+=1
             elif correct==2:
                 place=3
                 getprice=math.floor(totalSell*0.3)
+                price[2]+=1
             elif correct==1:
                 place=4
                 getprice=math.floor(totalSell*0.2)
+                price[3]+=1
 
             userfile=open(f"user_info{ctx.guild.id}","r")
             file_text=userfile.read()
@@ -358,6 +364,7 @@ async def CheckLotto(filename,ctx) :
         await ctx.send(showtext)
         os.remove(filename)
         canLotto=True
+        Lottocool=random.randint(10,30)
             
 
     
@@ -487,7 +494,7 @@ async def 한강(ctx) :
 
     await ctx.send(text+f"\n\n\n현재 한강 수온{lf_items}```")
 
-@commands.cooldown(1, 10, commands.BucketType.user)
+@commands.cooldown(1, 60, commands.BucketType.user)
 @bot.command()
 async def 구걸(ctx) :
     file=open(f"user_info{ctx.guild.id}","r")
