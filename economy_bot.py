@@ -14,7 +14,7 @@ import os.path
 bot = commands.Bot(command_prefix='$')
 
 token=""
-version="V1.0.6"
+version="V1.0.7"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -28,14 +28,16 @@ if testmode :
 else :
     Lottocool=10
     token = "NzY4MjgzMjcyOTQ5Mzk5NjEy.X4-Njg.NfyDMPVlLmgLAf8LkX9p0s04QDY"
+    version+=" TEST"
 
 
 
 @bot.event
 async def on_message(tempmessage) :
     global getnotice
-    if len(tempmessage.content)>50 and tempmessage.author.id!=768283272949399612 and tempmessage.channel.id==768343875001516074 :
-        await tempmessage.delete()
+    if tempmessage.author.id!=768283272949399612 and tempmessage.channel.id!=768343875001516074 and tempmessage.author.id!=768372057414565908 :
+        if len(tempmessage.content)>50 :
+            await tempmessage.delete()
 
     if str(tempmessage.content).startswith('$') :
         if cancommand :
@@ -67,13 +69,12 @@ async def on_ready():
     await bot.change_presence(status=discord.Status.online,activity=discord.Game(f'{version} $도움말'))
 
 
-# @bot.event
-# async def on_reaction_add(reaction,user) :
-#     if user.bot:
-#         return 
-#     if str(reaction.emoji)=="🔨":
-#         print(1+1+1)
-#         await user.send("f4d6a5sf1456as")
+@bot.event
+async def on_reaction_add(reaction,user) :
+    if user.bot :
+        return
+    if str(reaction.emoji)=="🔨":
+        await reaction.message.channel.send(reaction.message.content)
 
 
 @commands.cooldown(1, 2, commands.BucketType.default)
@@ -459,7 +460,7 @@ async def 강화(ctx) :
     embed=discord.Embed(title="강화",description="준비중입니다.")
     embed.add_field(name="가입 :clap:",value="강화 가입을 합니다.")
     embed.add_field(name="강화 :hammer:",value="강화를 합니다.")
-    msg = await ctx.send(embed=embed)
+    msg = await ctx.send(embed=embed,content=ctx.author.display_name)
     await msg.add_reaction("👏")
     await msg.add_reaction("🔨")
     return
@@ -473,7 +474,66 @@ async def 강화(ctx) :
 async def 한강(ctx) : 
     file=open("hanriver.txt","r",encoding="utf-8")
     text=file.read()
-    await ctx.send(text)
+    
+
+    url="https://hangang.life/"
+    result=requests.get(url = url)
+    bs_obj=BeautifulSoup(result.content,"html.parser")
+    lf_items=str(bs_obj.find("h1",{"class":"white"}))
+    lf_items=re.sub('<.+?>',"",lf_items,0)
+    lf_items=re.sub('\n',"",lf_items,0)
+    print(lf_items)
+
+    await ctx.send(text+f"\n\n\n현재 한강 수온{lf_items}```")
+
+@commands.cooldown(1, 10, commands.BucketType.user)
+@bot.command()
+async def 구걸(ctx) :
+    file=open(f"user_info{ctx.guild.id}","r")
+    file_text=file.read()
+    file.seek(0)
+    lines=file.readlines()
+    file.close()
+    userid=[]
+    nickname=""
+    money=0
+    for line in lines :
+        user=line.split(',')
+        userid.append(user[2])
+        if user[2]==str(ctx.author.id) :
+            nickname=user[1]
+            money=int(user[3])
+            if money>0:
+                await ctx.send("0모아를 가지고 있어야 구걸할수 있습니다.")
+                return
+     
+    if not str(ctx.author.id) in userid :
+        await ctx.send("가입을 해주세요.")
+        return
+
+
+    i=1
+    cut=0
+    getmoa=0
+    result=random.random()*100
+    while i<=12:
+        cut+=i
+        if result<cut:
+            getmoa=16000-1000*(i-1)
+            break
+        else :
+            i+=1
+    if i==13 :
+        getmoa=2500
+
+    print(money+getmoa)
+    file_text=file_text.replace(f"{ctx.author.id},{'%010d'%money}",f"{ctx.author.id},{'%010d'%(money+getmoa)}")
+    file=open(f"user_info{ctx.guild.id}","w")
+    file.write(file_text)
+    file.close()
+    
+    await ctx.send(f"'{nickname}' {getmoa}모아 획득!")
+
 
      
 
