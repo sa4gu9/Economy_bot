@@ -14,7 +14,7 @@ import os.path
 bot = commands.Bot(command_prefix='$')
 
 token=""
-version="V1.0.8"
+version="V1.0.8.1"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -109,12 +109,9 @@ def get_need(level):
     temp=[0,0,0,0,0,0]
     temp2=0
     for i in range(level):
-        if i<3 :
+        if i<6 :
             temp[i]=1
             temp2=1
-        elif i<6 :
-            temp[i]=2
-            temp2=2
         else :
             temp2=sum(temp)
             temp[0]=temp[1]
@@ -246,6 +243,25 @@ async def sellforce(message,reuser) :
 
     file=open(f"user_info{message.guild.id}","w")
     file.write(file_text)
+    file.close()
+
+    writetext=""
+    file=open("forcestore","r")
+    fileline=file.readlines()
+    file.seek(0)
+    filetext=file.read()
+    file.close()
+
+    for line in fileline : 
+        data=line.split(',')
+        if data[0]==str(level):
+            filetext=filetext.replace(f"{data[0]},{data[1]}",f"{data[0]},{int(data[1])+1}")
+
+
+    file=open("forcestore","w")
+    file.write(filetext)
+    file.close()
+
     file.close()
     
     await ctx.send(f"의문의 물건 +{level}이 판매되었습니다.")
@@ -640,11 +656,15 @@ async def 기부(ctx,nickname=None,moa=None) :
 @bot.command()
 async def 도움말(ctx,keyword=None) :
     if keyword==None:
-        await ctx.send("도움말 (명령어) : 가입, 자산, 베팅, 기부")
+        await ctx.send("도움말 (명령어) : 가입, 자산, 베팅, 기부, 복권, 강화")
     elif keyword=="베팅":
-        await ctx.send("$베팅 (모드) (돈)\n모드 종류 : 1 80% 1.4배, 2 64% 1.8배, 3 48% 2.2배, 4 32% 2.6배, 5 16% 3배, 6 85% 1.13배(올인만 가능)")
+        await ctx.send("$베팅 (모드) (돈)\n모드 종류 : 1 80% 1.4배, 2 64% 1.8배, 3 48% 2.2배, 4 32% 2.6배, 5 16% 3배, 6 60% 2배(올인만 가능)")
+    elif keyword=="자산":
+        await ctx.send("$자산 (닉네임)")
+    elif keyword=="복권":
+        await ctx.send("$복권 (구매개수 - 기본값 : 1)")
     else :
-        await ctx.send("현재 도움말은 베팅만 지원합니다.")
+        await ctx.send("현재 도움말은 베팅,자산, 복권만 지원합니다.")
 
 @commands.cooldown(1, 2, commands.BucketType.default)
 @bot.command()
