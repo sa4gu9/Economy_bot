@@ -14,7 +14,7 @@ import os.path
 bot = commands.Bot(command_prefix='$')
 
 token=""
-version="V1.0.8.1"
+version="V1.0.8.2"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -206,7 +206,7 @@ async def doforce(message,reuser):
         else :
             await ctx.send(f"강화 레벨 {level}에서 변동 없음! 현재 레벨 : {level}")      
     else :
-        file_text=file_text.replace(f"{ctx.author.id},{'%010d'%moa},{level}",f"{ctx.author.id},{'%010d'%(moa-need)},0")
+        file_text=file_text.replace(f"{reuser.id},{'%010d'%moa},{level}",f"{reuser.id},{'%010d'%(moa-need)},0")
         await ctx.send(f"의문의 물건 +{level} 파괴...")
     
     file=open(f"user_info{ctx.guild.id}","w")
@@ -772,6 +772,14 @@ async def 구걸(ctx) :
 
 @commands.cooldown(1, 5, commands.BucketType.user)
 @bot.command()
+async def 자산이전(ctx,nickname1,nickname2):
+    if ctx.author.id!=382938103435886592:
+        await ctx.send("제작자 전용 명령어입니다.")
+        return
+    
+
+@commands.cooldown(1, 5, commands.BucketType.user)
+@bot.command()
 async def 강화구매(ctx,level=None):
     try :
         userid=[]
@@ -804,7 +812,8 @@ async def 강화구매(ctx,level=None):
         if level==None:
             i=0
             while i<29 :
-                showtext+=f"의문의 물건 +{i+1}, {remainlist[i]}개 남음,{get_price(i+1)[1]}모아\n"
+                if remainlist[i]>0 :
+                    showtext+=f"의문의 물건 +{i+1}, {remainlist[i]}개 남음,{get_price(i+1)[0]}모아\n"
                 i+=1
             
             showtext+='```'
