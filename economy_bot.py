@@ -14,7 +14,7 @@ import os.path
 bot = commands.Bot(command_prefix='$')
 
 token=""
-version="V1.0.8.2"
+version="V1.0.8.3"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -851,10 +851,10 @@ async def 강화구매(ctx,level=None):
         for user in userlines :
             userdata=user.split(',')
             if str(ctx.author.id)==userdata[2]:
-                if int(userdata[3])>=get_price(level)[1] :
-                    userfile_text=userfile_text.replace(f"{userdata[2]},{userdata[3]},0",f"{userdata[2]},{'%010d'%(int(userdata[3])-get_price(level)[1])},{level}")
+                if int(userdata[3])>=get_price(level)[0] :
+                    userfile_text=userfile_text.replace(f"{userdata[2]},{userdata[3]},0",f"{userdata[2]},{'%010d'%(int(userdata[3])-get_price(level)[0])},{level}")
                 else :
-                    await ctx.send(f"{abs(int(userdata[3])-get_price(level)[1])}모아가 부족합니다.")
+                    await ctx.send(f"{get_price(level)[1]-int(userdata[3])}모아가 부족합니다.")
                     return
         
         file=open(f"user_info{ctx.guild.id}","w")
