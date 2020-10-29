@@ -14,7 +14,7 @@ import os.path
 bot = commands.Bot(command_prefix='$')
 
 token=""
-version="V1.0.8.3"
+version="V1.0.8.4"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -43,13 +43,13 @@ lottoRange=10
 @bot.event
 async def on_message(tempmessage) :
     global getnotice
-    if tempmessage.author.id!=768283272949399612 and tempmessage.channel.id==768343875001516074 and tempmessage.author.id!=768372057414565908 :
+    if tempmessage.author.id!=768283272949399612 and tempmessage.channel.id==771203131836989443 and tempmessage.author.id!=768372057414565908 :
         if len(tempmessage.content)>50 :    
             await tempmessage.delete()
 
     if str(tempmessage.content).startswith('$') :
         if cancommand :
-            if tempmessage.channel.id!=768343875001516074 and tempmessage.channel.id!=709647685417697372 :
+            if tempmessage.channel.id!=771203131836989443 and tempmessage.channel.id!=709647685417697372 :
                 await tempmessage.channel.send("봇 전용 채널에서만 사용 가능합니다.")
                 return
             else :
@@ -166,10 +166,10 @@ async def doforce(message,reuser):
     else :
         cri_success=0.0
 
-    if level==1 :
+    if level<15 :
         destroy=0.0
     else :
-        destroy=0.73*(level-29)+20
+        destroy=1.41*(level-29)+20
 
     success=100-3.2*level
     fail=get_fail(level)
