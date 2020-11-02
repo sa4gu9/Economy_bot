@@ -22,7 +22,7 @@ cancommand=True
 canLotto=True
 getnotice=False
 
-testmode=True
+testmode=False
 Lottocool=0
 Lottomax=3
 
@@ -484,12 +484,12 @@ async def 모두(ctx) :
 
 @bot.command()
 @commands.cooldown(1, 10, commands.BucketType.default)
-async def 일시정지(ctx) :
+async def 일시정지(ctx,reason=None) :
     global cancommand
     if ctx.author.id==382938103435886592 :
         cancommand=not cancommand
         if cancommand : 
-            await ctx.send("명령어 사용이 가능합니다.")
+            await ctx.send(f"명령어 사용이 가능합니다. 이유: {reason}")
         else :
             await ctx.send("명령어 사용이 불가능합니다.")
 
