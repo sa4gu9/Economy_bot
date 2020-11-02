@@ -10,16 +10,19 @@ import requests
 import string
 import math
 import os.path
+import asyncio
+import sched
+import datetime
 
 bot = commands.Bot(command_prefix='$')
 
 token=""
-version="V1.0.8.4"
+version="V1.0.8.5"
 cancommand=True
 canLotto=True
 getnotice=False
 
-testmode=False
+testmode=True
 Lottocool=0
 Lottomax=3
 
@@ -75,6 +78,33 @@ async def on_ready():
     print(bot.user.id)
     print("-----------")
     await bot.change_presence(status=discord.Status.online,activity=discord.Game(f'{version} $도움말'))
+    bot.loop.create_task(job())
+
+async def job() :
+    channel=bot.get_channel(709647685417697372)
+    while True:
+        currentTime=str(datetime.datetime.now().time())[0:8]
+        print(currentTime[0:5])
+        print(currentTime[3:5])#분
+        print(currentTime[6:8])#초
+        if currentTime[0:5]=="01:00" and ( int(currentTime[6:8]) >=0 and int(currentTime[6:8]) <10):
+            file=open("forcestore","r")
+            file_text=file.read()
+            file.seek(0)
+            fileLines=file.readlines()
+            file.close()
+
+
+            info1=fileLines[0]
+            information=info1.split(',')
+
+            if int(information[1])<100:
+                file_text=file_text.replace(f"1,{information[1]}","1,100")
+                file=open("forcestore","w")
+                file.write(file_text)
+                file.close()
+                await channel.send("의문의 물건 +1의 남은 개수가 100개가 되었습니다.")
+        await asyncio.sleep(10)
 
 
 @bot.event
@@ -86,13 +116,18 @@ async def on_reaction_add(reaction,user) :
     if reaction.message.id in forceMsg :
         if user.display_name==reaction.message.content :
             if str(reaction.emoji)=="🔨":
-                await doforce(reaction.message,user)
+                await doforce(reaction.message,user,1)
                 forceMsg.remove(reaction.message.id)
                 await reaction.message.delete()
             if str(reaction.emoji)=="😀":
                 await sellforce(reaction.message,user)
                 forceMsg.remove(reaction.message.id)
                 await reaction.message.delete()
+            if str(reaction.emoji)=="🔥":
+                await doforce(reaction.message,user,3)
+                forceMsg.remove(reaction.message.id)
+                await reaction.message.delete()
+            
 
 
 def get_fail(level):
@@ -122,7 +157,7 @@ def get_need(level):
             temp[5]=temp2
     return temp2
 
-async def doforce(message,reuser):
+async def doforce(message,reuser,count):
     level = 1
     cri_success=0.0
     success=0.0
@@ -135,83 +170,89 @@ async def doforce(message,reuser):
     moa=0
     level=0
 
-    file=open(f"user_info{message.guild.id}","r")
-    file_text=file.read()
-    file.seek(0)
-    lines=file.readlines()
-    file.close()
+    #region 반복 구간 시작
 
-    ctx=message.channel
-    for user in lines :
-        user_info=user.split(',')
-        if user_info[2]==str(reuser.id):
-            level=int(user_info[4])
-            moa=int(user_info[3])
-    
-    need=get_need(level)
-    
+    for i in range(count):
+        file=open(f"user_info{message.guild.id}","r")
+        file_text=file.read()
+        file.seek(0)
+        lines=file.readlines()
+        file.close()
 
-    if need>moa :
-        await ctx.send(f"{need-moa}모아가 부족합니다.")
-        return
-    if level == 30 :
-        await ctx.send("이미 의문의 물건 +30을 가지고 있습니다.")
-        return
-    elif level == 0 :
-        await ctx.send("의문의 물건을 가지고 있지 않습니다.")
-        return
+        ctx=message.channel
 
-    if level !=29 :
-        cri_success=0.05*(30-level)
-    else :
-        cri_success=0.0
+        for user in lines :
+            user_info=user.split(',')
+            if user_info[2]==str(reuser.id):
+                level=int(user_info[4])
+                moa=int(user_info[3])
+                nickname=user_info[1]
+        
+        need=get_need(level)
+        
 
-    if level<15 :
-        destroy=0.0
-    else :
-        destroy=1.41*(level-29)+20
+        if need>moa :
+            await ctx.send(f"{need-moa}모아가 부족합니다.")
+            return
+        if level == 30 :
+            await ctx.send("이미 의문의 물건 +30을 가지고 있습니다.")
+            return
+        elif level == 0 :
+            await ctx.send("의문의 물건을 가지고 있지 않습니다.")
+            return
 
-    success=100-3.2*level
-    fail=get_fail(level)
-
-    not_change=100 - cri_success - success - fail - destroy
-
-    result=random.random()*100
-
-    print(result)
-
-    if result<cri_success :
-        print(f"{result}  {cri_success}")
-        change=2        
-    elif result<cri_success + success :
-        print(f"{result}  {cri_success+success}")
-        change=1
-    elif result<cri_success+success + not_change :
-        print(f"{result}  {cri_success+success+ not_change}")
-        change=0
-    elif result < cri_success + success + not_change + fail :
-        print(f"{result}  {cri_success+success+ not_change+ fail}")
-        change=-1
-    else :
-        change=-10
-    
-    print(change)
-
-    if change!=-10 :
-        file_text=file_text.replace(f"{reuser.id},{'%010d'%moa},{level}",f"{reuser.id},{'%010d'%(moa-need)},{level+change}")
-        if change>0 :
-            await ctx.send(f"강화 레벨 {level}에서 {change} 상승! 현재 레벨 : {level+change}")
-        elif change<0 :
-            await ctx.send(f"강화 레벨 {level}에서 {-change} 감소! 현재 레벨 : {level+change}")
+        if level !=29 :
+            cri_success=0.05*(30-level)
         else :
-            await ctx.send(f"강화 레벨 {level}에서 변동 없음! 현재 레벨 : {level}")      
-    else :
-        file_text=file_text.replace(f"{reuser.id},{'%010d'%moa},{level}",f"{reuser.id},{'%010d'%(moa-need)},0")
-        await ctx.send(f"의문의 물건 +{level} 파괴...")
-    
-    file=open(f"user_info{ctx.guild.id}","w")
-    file.write(file_text)
-    file.close()
+            cri_success=0.0
+
+        if level<15 :
+            destroy=0.0
+        else :
+            destroy=1.41*(level-29)+20
+
+        success=100-3.2*level
+        fail=get_fail(level)
+
+        not_change=100 - cri_success - success - fail - destroy
+
+        result=random.random()*100
+
+        print(result)
+
+        if result<cri_success :
+            print(f"{result}  {cri_success}")
+            change=2        
+        elif result<cri_success + success :
+            print(f"{result}  {cri_success+success}")
+            change=1
+        elif result<cri_success+success + not_change :
+            print(f"{result}  {cri_success+success+ not_change}")
+            change=0
+        elif result < cri_success + success + not_change + fail :
+            print(f"{result}  {cri_success+success+ not_change+ fail}")
+            change=-1
+        else :
+            change=-10
+        
+        print(change)
+
+        if change!=-10 :
+            file_text=file_text.replace(f"{reuser.id},{'%010d'%moa},{level}",f"{reuser.id},{'%010d'%(moa-need)},{level+change}")
+            if change>0 :
+                await ctx.send(f"{nickname}, 강화 레벨 {level}에서 {change} 상승! 현재 레벨 : {level+change}")
+            elif change<0 :
+                await ctx.send(f"{nickname}, 강화 레벨 {level}에서 {-change} 감소! 현재 레벨 : {level+change}")
+            else :
+                await ctx.send(f"{nickname}, 강화 레벨 {level}에서 변동 없음! 현재 레벨 : {level}")      
+        else :
+            file_text=file_text.replace(f"{reuser.id},{'%010d'%moa},{level}",f"{reuser.id},{'%010d'%(moa-need)},0")
+            await ctx.send(f"{nickname}, 의문의 물건 +{level} 파괴...")
+        
+        file=open(f"user_info{ctx.guild.id}","w")
+        file.write(file_text)
+        file.close()
+    #endregion
 
 async def sellforce(message,reuser) :
     ctx=message.channel
@@ -291,6 +332,9 @@ def get_price(level) :
             temp[2]=temp[3]
             temp[3]=temp_buy
     return temp_buy,temp_sell
+
+
+
 
 @commands.cooldown(1, 2, commands.BucketType.default)
 @bot.command()
@@ -549,7 +593,7 @@ async def CheckLotto(filename,ctx) :
                 i+=1
             if correct>0:
                 if correct==4 :
-                    if special==int(submit[3]):
+                    if special==int(submit[4]):
                         place=1
                         getprice=math.floor(totalSell*5)
                         winner[3].append(submit[4])
@@ -695,13 +739,15 @@ async def 닉네임(ctx):
 @bot.command()
 async def 강화(ctx) : 
     global forceMsg
-    embed=discord.Embed(title="강화",description="준비중입니다.")
+    embed=discord.Embed(title="강화",description="3번 연속 강화 추가!")
     embed.add_field(name="강화 :hammer:",value="강화를 합니다.")
     embed.add_field(name="판매 :grinning:",value="판매를 합니다.")
+    embed.add_field(name="강화x3 :fire:",value="강화를 3번 합니다.")
     msg=await ctx.send(embed=embed,content=ctx.author.display_name)
     forceMsg.append(msg.id)
     await msg.add_reaction("🔨")
     await msg.add_reaction("😀")
+    await msg.add_reaction("🔥")
     return
     #file=open(f"user_info{ctx.guild.id}","r")
 
@@ -883,8 +929,5 @@ async def 강화구매(ctx,level=None):
     except Exception as e :
         await ctx.send(f"{e}\n$강화구매 (레벨)")
     
-
-
-     
 
 bot.run(token)
