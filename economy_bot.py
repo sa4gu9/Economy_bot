@@ -17,12 +17,12 @@ import datetime
 bot = commands.Bot(command_prefix='$')
 
 token=""
-version="V1.0.9.2"
+version="V1.0.9.3"
 cancommand=True
 canLotto=True
 getnotice=False
 
-testmode=False
+testmode=True
 Lottocool=0
 Lottomax=3
 
@@ -117,7 +117,7 @@ async def on_reaction_add(reaction,user) :
 
     if reaction.message.id in forceMsg :
         if user.display_name==reaction.message.content :
-            if str(reaction.emoji)=="🔥" or str(reaction.emoji)=="😀" or str(reaction.emoji)=="🔨" : 
+            if str(reaction.emoji)=="🔥" or str(reaction.emoji)=="😀" or str(reaction.emoji)=="🔨" or str(reaction.emoji)=="🛡️" : 
                 await reaction.message.delete()
             if str(reaction.emoji)=="🔨":
                 await doforce(reaction.message,user,1)
@@ -127,6 +127,9 @@ async def on_reaction_add(reaction,user) :
                 forceMsg.remove(reaction.message.id)
             if str(reaction.emoji)=="🔥":
                 await doforce(reaction.message,user,3)
+                forceMsg.remove(reaction.message.id)
+            if str(reaction.emoji)=="🛡️":
+                await doforce(reaction.message,user,2)
                 forceMsg.remove(reaction.message.id)
             
             
@@ -160,6 +163,10 @@ def get_need(level):
     return temp2
 
 async def doforce(message,reuser,count):
+    NotDestroy=False
+    if count==2:
+        NotDestroy=True
+        count=1
     level = 1
     cri_success=0.0
     success=0.0
@@ -196,13 +203,13 @@ async def doforce(message,reuser,count):
 
         if need>moa :
             await ctx.send(f"{need-moa}모아가 부족합니다.")
-            return
-        if level == 30 :
+            break
+        if level == 30 : 
             await ctx.send("이미 의문의 물건 +30을 가지고 있습니다.")
-            return
+            break
         elif level == 0 :
             await ctx.send("의문의 물건을 가지고 있지 않습니다.")
-            return
+            break
 
         if level !=29 :
             cri_success=0.05*(30-level)
@@ -218,6 +225,12 @@ async def doforce(message,reuser,count):
         fail=get_fail(level)
 
         not_change=100 - cri_success - success - fail - destroy
+
+        if NotDestroy:
+            need=math.floor(need*1.1)
+            not_change+=destroy
+            destroy=0
+            
 
         result=random.random()*100
 
@@ -759,11 +772,13 @@ async def 강화(ctx) :
     embed.add_field(name="강화 :hammer:",value="강화를 합니다.")
     embed.add_field(name="판매 :grinning:",value="판매를 합니다.")
     embed.add_field(name="강화x3 :fire:",value="강화를 3번 합니다.")
+    embed.add_field(name="파괴방지 강화 :shield:",value="파괴방지 후 강화를 합니다.(비용 1.1배)")
     msg=await ctx.send(embed=embed,content=ctx.author.display_name)
     forceMsg.append(msg.id)
     await msg.add_reaction("🔨")
     await msg.add_reaction("😀")
     await msg.add_reaction("🔥")
+    await msg.add_reaction("🛡️")
     return
 
 @bot.command()
@@ -1005,5 +1020,6 @@ async def setluckypang(price,ctx):
 
 
 
+print(f"testmode : {testmode}")
 
 bot.run(token)
