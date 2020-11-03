@@ -227,9 +227,12 @@ async def doforce(message,reuser,count):
         not_change=100 - cri_success - success - fail - destroy
 
         if NotDestroy:
-            need=math.floor(need*1.1)
-            not_change+=destroy
-            destroy=0
+            if destroy!=0:
+                need=math.floor(need*1.1)
+                not_change+=destroy
+                destroy=0
+            else :
+                await ctx.send("파괴 방지가 불가능합니다.")
             
 
         result=random.random()*100
