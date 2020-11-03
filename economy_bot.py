@@ -17,7 +17,7 @@ import datetime
 bot = commands.Bot(command_prefix='$')
 
 token=""
-version="V1.0.9.1"
+version="V1.0.9.2"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -29,14 +29,14 @@ Lottomax=3
 forceMsg=[]
 
 if testmode :
-    giveMcool=1
+    giveMcool=1 
     Lottocool=1
     token="NzY4MzcyMDU3NDE0NTY1OTA4.X4_gPg.fg2sLq5F1ZJr9EwIgA_hiVHtfjQ"
     version+=" TEST"
-    maxlucky=500
+    maxlucky=7901
     Lottomax=10
 else :
-    giveMcool=60
+    giveMcool=120
     Lottocool=16
     Lottomax=3
     token = "NzY4MjgzMjcyOTQ5Mzk5NjEy.X4-Njg.NfyDMPVlLmgLAf8LkX9p0s04QDY"
@@ -171,6 +171,7 @@ async def doforce(message,reuser,count):
 
     moa=0
     level=0
+    totalfailneed=0
 
     #region 반복 구간 시작
 
@@ -254,8 +255,13 @@ async def doforce(message,reuser,count):
         file=open(f"user_info{ctx.guild.id}","w")
         file.write(file_text)
         file.close()
+
+        if change<=0:
+            totalfailneed+=need
         asyncio.sleep(0.1)
     #endregion
+    if totalfailneed!=0:
+        await setluckypang(math.floor(totalfailneed*0.1),message.channel)
 
 async def sellforce(message,reuser) :
     ctx=message.channel
@@ -809,10 +815,14 @@ async def 구걸(ctx) :
     while i<=12:
         cut+=i
         if result<cut:
-            getmoa=16000-1000*(i-1)
+            getmoa=32000-1000*(i-1)
             break
         else :
             i+=1
+    if i==1:
+        result=random.random()*100
+        if result<10:
+            getmoa*=2
     if i==13 :
         getmoa=2500
 
@@ -946,7 +956,7 @@ async def setluckypang(price,ctx):
     file.close()
 
     
-    await ctx.send(f"{stack+price}/{maxlucky}  {round((stack+price)/maxlucky,3)*100}%")
+    await ctx.send(f"{stack+price}/{maxlucky}  {'%.3f'%((stack+price)/maxlucky*100)}%")
 
     if stack+price>=maxlucky:
         nicknames=[]
