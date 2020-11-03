@@ -22,7 +22,7 @@ cancommand=True
 canLotto=True
 getnotice=False
 
-testmode=True
+testmode=False
 Lottocool=0
 Lottomax=3
 
