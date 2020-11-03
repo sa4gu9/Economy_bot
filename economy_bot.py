@@ -17,7 +17,7 @@ import datetime
 bot = commands.Bot(command_prefix='$')
 
 token=""
-version="V1.0.9.4"
+version="V1.0.9.5"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -212,16 +212,6 @@ async def doforce(message,reuser,mode):
         need=get_need(level)
         
 
-        if need>moa :
-            await ctx.send(f"{need-moa}모아가 부족합니다.")
-            break
-        if level == 30 : 
-            await ctx.send("이미 의문의 물건 +30을 가지고 있습니다.")
-            break
-        elif level == 0 :
-            await ctx.send("의문의 물건을 가지고 있지 않습니다.")
-            break
-
         if level !=29 :
             cri_success=0.05*(30-level)
         else :
@@ -236,6 +226,7 @@ async def doforce(message,reuser,mode):
         fail=get_fail(level)
 
         not_change=100 - cri_success - success - fail - destroy
+
 
         if NotDestroy:
             if destroy!=0:
@@ -252,7 +243,16 @@ async def doforce(message,reuser,mode):
                 return
             else :
                 need=need*2
-            
+
+        if need>moa :
+            await ctx.send(f"{need-moa}모아가 부족합니다.")
+            break
+        if level == 30 : 
+            await ctx.send("이미 의문의 물건 +30을 가지고 있습니다.")
+            break
+        elif level == 0 :
+            await ctx.send("의문의 물건을 가지고 있지 않습니다.")
+            break      
 
         result=random.random()*100
 
