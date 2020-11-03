@@ -17,7 +17,7 @@ import datetime
 bot = commands.Bot(command_prefix='$')
 
 token=""
-version="V1.0.9.3"
+version="V1.0.9.4"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -117,7 +117,7 @@ async def on_reaction_add(reaction,user) :
 
     if reaction.message.id in forceMsg :
         if user.display_name==reaction.message.content :
-            if str(reaction.emoji)=="🔥" or str(reaction.emoji)=="😀" or str(reaction.emoji)=="🔨" or str(reaction.emoji)=="🛡️" : 
+            if str(reaction.emoji)=="🔥" or str(reaction.emoji)=="😀" or str(reaction.emoji)=="🔨" or str(reaction.emoji)=="🛡️" or str(reaction.emoji)=="⏩" : 
                 await reaction.message.delete()
             if str(reaction.emoji)=="🔨":
                 await doforce(reaction.message,user,1)
@@ -130,6 +130,9 @@ async def on_reaction_add(reaction,user) :
                 forceMsg.remove(reaction.message.id)
             if str(reaction.emoji)=="🛡️":
                 await doforce(reaction.message,user,2)
+                forceMsg.remove(reaction.message.id)
+            if str(reaction.emoji)=="⏩":
+                await doforce(reaction.message,user,4)
                 forceMsg.remove(reaction.message.id)
             
             
@@ -162,11 +165,19 @@ def get_need(level):
             temp[5]=temp2
     return temp2
 
-async def doforce(message,reuser,count):
+async def doforce(message,reuser,mode):
     NotDestroy=False
-    if count==2:
-        NotDestroy=True
-        count=1
+    FastUp=False
+    count=1
+
+    if mode==2:
+        NotDestroy=True        
+    elif mode==3:
+        count=3
+    elif mode==4:
+        FastUp=True
+        
+        
     level = 1
     cri_success=0.0
     success=0.0
@@ -234,6 +245,13 @@ async def doforce(message,reuser,count):
             else :
                 await ctx.send("파괴 방지가 불가능합니다.")
                 return
+        
+        if FastUp :
+            if level>23:
+                await ctx.send("24렙 이상은 4렙 업 찬스를 사용할 수 없습니다.")
+                return
+            else :
+                need=need*2
             
 
         result=random.random()*100
@@ -242,10 +260,16 @@ async def doforce(message,reuser,count):
 
         if result<cri_success :
             print(f"{result}  {cri_success}")
-            change=2        
+            if FastUp:
+                change=6
+            else :
+                change=2        
         elif result<cri_success + success :
             print(f"{result}  {cri_success+success}")
-            change=1
+            if FastUp:
+                change=4
+            else :
+                change=1
         elif result<cri_success+success + not_change :
             print(f"{result}  {cri_success+success+ not_change}")
             change=0
@@ -772,17 +796,19 @@ async def 닉네임(ctx):
 @bot.command()
 async def 강화(ctx) : 
     global forceMsg
-    embed=discord.Embed(title="강화",description="3번 연속 강화 추가!")
+    embed=discord.Embed(title="강화",description="강화 시간을 4분의 1로 줄일수 있다?")
     embed.add_field(name="강화 :hammer:",value="강화를 합니다.")
     embed.add_field(name="판매 :grinning:",value="판매를 합니다.")
     embed.add_field(name="강화x3 :fire:",value="강화를 3번 합니다.")
     embed.add_field(name="파괴방지 강화 :shield:",value="파괴방지 후 강화를 합니다.(비용 1.1배)")
+    embed.add_field(name="4렙업 :fast_forward:",value="성공시 4렙, 크리티컬 성공시 6렙을 올립니다.(비용 2배)")
     msg=await ctx.send(embed=embed,content=ctx.author.display_name)
     forceMsg.append(msg.id)
     await msg.add_reaction("🔨")
     await msg.add_reaction("😀")
     await msg.add_reaction("🔥")
     await msg.add_reaction("🛡️")
+    await msg.add_reaction("⏩")
     return
 
 @bot.command()
