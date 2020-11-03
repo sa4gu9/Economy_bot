@@ -233,6 +233,7 @@ async def doforce(message,reuser,count):
                 destroy=0
             else :
                 await ctx.send("파괴 방지가 불가능합니다.")
+                return
             
 
         result=random.random()*100
