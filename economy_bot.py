@@ -17,7 +17,7 @@ import datetime
 bot = commands.Bot(command_prefix='$')
 
 token=""
-version="V1.0.8.5"
+version="V1.0.9"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -33,12 +33,14 @@ if testmode :
     Lottocool=1
     token="NzY4MzcyMDU3NDE0NTY1OTA4.X4_gPg.fg2sLq5F1ZJr9EwIgA_hiVHtfjQ"
     version+=" TEST"
+    maxlucky=500
     Lottomax=10
 else :
     giveMcool=60
     Lottocool=16
     Lottomax=3
     token = "NzY4MjgzMjcyOTQ5Mzk5NjEy.X4-Njg.NfyDMPVlLmgLAf8LkX9p0s04QDY"
+    maxlucky=10000000
     
 lottoRange=10
 
@@ -252,6 +254,7 @@ async def doforce(message,reuser,count):
         file=open(f"user_info{ctx.guild.id}","w")
         file.write(file_text)
         file.close()
+        asyncio.sleep(0.1)
     #endregion
 
 async def sellforce(message,reuser) :
@@ -417,6 +420,7 @@ async def 버전(ctx) :
 @bot.command()
 async def 베팅(ctx,mode=None,moa=None) :
     try :
+        success=True
         file=open(f"user_info{ctx.guild.id}","r")
         lines=file.readlines()
         file.seek(0)
@@ -452,21 +456,28 @@ async def 베팅(ctx,mode=None,moa=None) :
     result=random.randrange(0,100)
     lose=int(moa)
     end=0
-    file=open(f"user_info{ctx.guild.id}","w")
     if result<chance : 
         profit=math.floor(multiple*int(moa))
         end=money-lose+profit
         await ctx.send(f"{nickname} 베팅 성공!")
+        success=True
     else :
         end=money-int(moa)
         await ctx.send(f"{nickname} 베팅 실패!")
         save2=random.randrange(0,100)
+        success=False
         if save2<10 :
             end+=math.floor(int(moa)*0.3)
             await ctx.send("건 돈의 30% 지급")
+    file=open(f"user_info{ctx.guild.id}","w")
     file_text=file_text.replace(f"{ctx.author.id},{'%010d'%money}",f"{ctx.author.id},{'%010d'%end}")
     file.write(file_text)
     file.close()
+
+    if not success :
+        await setluckypang(math.floor(int(moa)*0.1),ctx)
+
+
 
 @bot.command()
 async def 모두(ctx) :
@@ -489,9 +500,9 @@ async def 일시정지(ctx,reason=None) :
     if ctx.author.id==382938103435886592 :
         cancommand=not cancommand
         if cancommand : 
-            await ctx.send(f"명령어 사용이 가능합니다. 이유: {reason}")
+            await ctx.send("명령어 사용이 가능합니다.")
         else :
-            await ctx.send("명령어 사용이 불가능합니다.")
+            await ctx.send(f"명령어 사용이 불가능합니다. 이유: {reason}")
 
 #region 복권
 @commands.cooldown(1, Lottocool, commands.BucketType.user)
@@ -929,5 +940,62 @@ async def 강화구매(ctx,level=None):
     except Exception as e :
         await ctx.send(f"{e}\n$강화구매 (레벨)")
     
+
+async def setluckypang(price,ctx):
+    global maxlucky
+    file=open("luckypang","r")
+    stack=int(file.read())
+    file.close()
+
+    
+    await ctx.send(f"{stack+price}/{maxlucky}")
+
+    if stack+price>=maxlucky:
+        nicknames=[]
+        moneys=[]
+        discordid=[]
+        money=0
+        userid=0
+
+        userfile=open(f"user_info{ctx.guild.id}","r")
+        file_text=userfile.read()
+        userfile.seek(0)
+        userlines=userfile.readlines()
+        userfile.close()
+        for user in userlines:
+            userinfo=user.split(',')
+            nicknames.append(userinfo[1])
+            discordid.append(userinfo[2])
+            moneys.append(userinfo[3])
+        
+        
+    
+        nickname=random.choice(nicknames)
+        money=int(moneys[nicknames.index(nickname)])
+        userid=discordid[nicknames.index(nickname)]
+
+        print(f"{userid},{'%010d'%(money)}")
+        print(f"{userid},{'%010d'%(money+stack+price)}")
+        file_text=file_text.replace(f"{userid},{'%010d'%(money)}",f"{userid},{'%010d'%(money+stack+price)}")
+        editfile=open(f"user_info{ctx.guild.id}","w")
+        editfile.write(file_text)
+        editfile.close()
+        editfile=open(f"luckypang","w")
+        editfile.write(str(0))
+        editfile.close()
+
+        await ctx.send(f"{nickname} 럭키팡 당첨! {stack+price}모아 지급!")
+    else :
+        editfile=open(f"luckypang","w")
+        editfile.write(str(stack+price))
+        editfile.close()
+        
+        
+
+
+            
+
+
+
 
 bot.run(token)
