@@ -17,7 +17,7 @@ import datetime
 bot = commands.Bot(command_prefix='$')
 
 token=""
-version="V1.0.9"
+version="V1.0.9.1"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -117,18 +117,18 @@ async def on_reaction_add(reaction,user) :
 
     if reaction.message.id in forceMsg :
         if user.display_name==reaction.message.content :
+            if str(reaction.emoji)=="🔥" or str(reaction.emoji)=="😀" or str(reaction.emoji)=="🔨" : 
+                await reaction.message.delete()
             if str(reaction.emoji)=="🔨":
                 await doforce(reaction.message,user,1)
                 forceMsg.remove(reaction.message.id)
-                await reaction.message.delete()
             if str(reaction.emoji)=="😀":
                 await sellforce(reaction.message,user)
                 forceMsg.remove(reaction.message.id)
-                await reaction.message.delete()
             if str(reaction.emoji)=="🔥":
                 await doforce(reaction.message,user,3)
                 forceMsg.remove(reaction.message.id)
-                await reaction.message.delete()
+            
             
 
 
@@ -746,7 +746,6 @@ async def 닉네임(ctx):
     await ctx.send(f"{ctx.author.display_name}의 닉네임은 {nickname}입니다.")
 
 
-
 @bot.command()
 async def 강화(ctx) : 
     global forceMsg
@@ -760,7 +759,6 @@ async def 강화(ctx) :
     await msg.add_reaction("😀")
     await msg.add_reaction("🔥")
     return
-    #file=open(f"user_info{ctx.guild.id}","r")
 
 @bot.command()
 async def 한강(ctx) : 
@@ -948,7 +946,7 @@ async def setluckypang(price,ctx):
     file.close()
 
     
-    await ctx.send(f"{stack+price}/{maxlucky}")
+    await ctx.send(f"{stack+price}/{maxlucky}  {round((stack+price)/maxlucky,3)*100}%")
 
     if stack+price>=maxlucky:
         nicknames=[]
