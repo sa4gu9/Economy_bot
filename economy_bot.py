@@ -17,7 +17,7 @@ import datetime
 bot = commands.Bot(command_prefix='$')
 
 token=""
-version="V1.0.9.5"
+version="V1.1.0"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -27,6 +27,7 @@ Lottocool=0
 Lottomax=3
 
 forceMsg=[]
+boxMsg=[]
 
 if testmode :
     giveMcool=1 
@@ -65,7 +66,7 @@ async def on_message(tempmessage) :
             else :
                 if str(tempmessage.content).startswith('$') :
                     if not getnotice  :
-                        channel=bot.get_channel(768343875001516074)
+                        channel=bot.get_channel(771203131836989443)
                         await channel.send("현재 일시정지 상태입니다.")
                         getnotice=True                    
                     else :
@@ -83,7 +84,7 @@ async def on_ready():
     bot.loop.create_task(job())
 
 async def job() :
-    channel=bot.get_channel(709647685417697372)
+    channel=bot.get_channel(771203131836989443)
     while True:
         currentTime=str(datetime.datetime.now().time())[0:8]
         print(currentTime[0:5])
@@ -112,9 +113,23 @@ async def job() :
 @bot.event
 async def on_reaction_add(reaction,user) :
     global forceMsg
+    global boxMsg
     if user.bot :
         return
 
+    if reaction.message.id in boxMsg :
+        if user.display_name==reaction.message.content :
+            if str(reaction.emoji)=="🎁" or str(reaction.emoji)=="❌" or str(reaction.emoji)=="👜" : 
+                await reaction.message.delete()
+            if str(reaction.emoji)=="🎁":
+                await BuyBox(reaction.message,user)
+                boxMsg.remove(reaction.message.id)
+            elif str(reaction.emoji)=="❌":
+                boxMsg.remove(reaction.message.id)
+            elif str(reaction.emoji)=="👜":
+                await CheckItem(reaction.message,user)
+                boxMsg.remove(reaction.message.id)
+    
     if reaction.message.id in forceMsg :
         if user.display_name==reaction.message.content :
             if str(reaction.emoji)=="🔥" or str(reaction.emoji)=="😀" or str(reaction.emoji)=="🔨" or str(reaction.emoji)=="🛡️" or str(reaction.emoji)=="⏩" : 
@@ -122,16 +137,16 @@ async def on_reaction_add(reaction,user) :
             if str(reaction.emoji)=="🔨":
                 await doforce(reaction.message,user,1)
                 forceMsg.remove(reaction.message.id)
-            if str(reaction.emoji)=="😀":
+            elif str(reaction.emoji)=="😀":
                 await sellforce(reaction.message,user)
                 forceMsg.remove(reaction.message.id)
-            if str(reaction.emoji)=="🔥":
+            elif str(reaction.emoji)=="🔥":
                 await doforce(reaction.message,user,3)
                 forceMsg.remove(reaction.message.id)
-            if str(reaction.emoji)=="🛡️":
+            elif str(reaction.emoji)=="🛡️":
                 await doforce(reaction.message,user,2)
                 forceMsg.remove(reaction.message.id)
-            if str(reaction.emoji)=="⏩":
+            elif str(reaction.emoji)=="⏩":
                 await doforce(reaction.message,user,4)
                 forceMsg.remove(reaction.message.id)
             
@@ -811,6 +826,22 @@ async def 강화(ctx) :
     await msg.add_reaction("⏩")
     return
 
+
+
+@bot.command()
+async def 상자구매(ctx) : 
+    global boxMsg
+    embed=discord.Embed(title="상자구매",description="")
+    embed.add_field(name="강화 관련 아이템 랜덤 박스 :gift:",value="6000모아")
+    embed.add_field(name="구매 안함 :x:",value="구매를 하지 않습니다.")
+    embed.add_field(name="보유 확인 :handbag:",value="보유 현황을 확인합니다.")
+    msg=await ctx.send(embed=embed,content=ctx.author.display_name)
+    boxMsg.append(msg.id)
+    await msg.add_reaction("🎁")
+    await msg.add_reaction("❌")
+    await msg.add_reaction("👜")
+    return
+
 @bot.command()
 async def 한강(ctx) : 
     file=open("hanriver.txt","r",encoding="utf-8")
@@ -1045,9 +1076,92 @@ async def setluckypang(price,ctx):
         
         
 
+async def BuyBox(message,reuser):
+    getPercent={"복권 1개":35,"복권 3개":26,"복권 5개":16,"복권 7개":10,"복권 10개":6,"복권 20개":3,"성공시 4렙업":1,"파괴방지":2,"강화비용면제":1}
+    haveitem=[]
 
+    get=""
+    count=1
+    writetext=""
+    
+    if os.path.isfile(f"forceitem{message.author.id}"):
+        file=open(f"forceitem{message.author.id}","r")
+        lines=file.readlines()
+        for line in lines :
+            have=line.split(':')
+            amount=int(have[1])
+            haveitem.append(amount)
+    else:
+        file=open(f"forceitem{message.author.id}","w")
+        for percentkey in getPercent.keys() :
+            writetext+=f"{percentkey}:0:\n"
+            haveitem.append(0)
+        file.write(writetext)
+
+    #region 반복 구간 시작
+
+    for i in range(count):
+        file=open(f"user_info{message.guild.id}","r")
+        file_text=file.read()
+        file.seek(0)
+        lines=file.readlines()
+        file.close()
+
+        ctx=message.channel
+
+        for user in lines :
+            user_info=user.split(',')
+            if user_info[2]==str(reuser.id):
+                moa=int(user_info[3])
+                nickname=user_info[1]
+        
+        need=6000
+
+        if need>moa :
+            await ctx.send(f"{need-moa}모아가 부족합니다.")
+            break
+        else:
+            file_text=file_text.replace(f"{reuser.id},{'%010d'%moa}",f"{reuser.id},{'%010d'%(moa-need)}")
+            file=open(f"user_info{message.guild.id}","w")
+            file.write(file_text)
+            file.close()
+
+        result=random.random()*100
+
+        print(result)
+
+        cut=0
+        keys=getPercent.keys()
+        for percentkey in keys :
+           cut+=getPercent[percentkey]
+
+           if result<cut:
+               get=percentkey
+               break
+
+        file=open(f"forceitem{message.author.id}","r")
+        file_text=file.read()
+        file.close()
+
+        print(f"{get}:{haveitem[list(keys).index(get)]}")
+        print(f"{get}:{haveitem[list(keys).index(get)]+1}")
+
+        file_text=file_text.replace(f"{get}:{haveitem[list(keys).index(get)]}",f"{get}:{haveitem[list(keys).index(get)]+1}")
+        file=open(f"forceitem{message.author.id}","w")
+        file.write(file_text)
+        file.close()
+
+        await ctx.send(f"{nickname}, '{get}'획득!")
+
+    #endregion
             
 
+
+async def CheckItem(message,reuser):
+    file=open(f"forceitem{message.author.id}","r")
+    file_text=file.read()
+    file.close()
+    await message.channel.send('```'+file_text+'```')
 
 
 print(f"testmode : {testmode}")
