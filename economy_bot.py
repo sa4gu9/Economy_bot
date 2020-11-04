@@ -17,7 +17,7 @@ import datetime
 bot = commands.Bot(command_prefix='$')
 
 token=""
-version="V1.1.0"
+version="V1.1.0.1"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -1152,7 +1152,7 @@ async def BuyBox(message,reuser):
         file.close()
 
         await ctx.send(f"{nickname}, '{get}'획득!")
-
+        await setluckypang(6000,ctx)
     #endregion
             
 
