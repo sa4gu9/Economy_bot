@@ -13,16 +13,25 @@ import os.path
 import asyncio
 import sched
 import datetime
+import csv
+import re
 
 bot = commands.Bot(command_prefix='$')
 
 token=""
-version="V1.1.0.1"
+version="V1.1.1"
 cancommand=True
 canLotto=True
 getnotice=False
 
+testint=10
 testmode=False
+
+if testint==0:
+    testmode=False
+else :
+    testmode=True
+
 Lottocool=0
 Lottomax=3
 
@@ -571,60 +580,14 @@ async def 일시정지(ctx,reason=None) :
 @bot.command()
 async def 복권(ctx,amount=1) :
     global canLotto
-    global Lottomax
-    global lottoRange
-    showtext="```"
-    if not canLotto :
-        await ctx.send("마감되었습니다.")
-        return
-    nickname=""
-    filename=f"user_info{ctx.guild.id}"
-    if int(amount)>Lottomax:
-        await ctx.send(f"한번에 {Lottomax}개까지 구매 가능합니다.")
-        return
-    for num in range(int(amount)) :
-        i=0
-        number=[0,0,0,0]
-        num=0
-        file=open(filename,"r")
-        file_text=file.read()
-        file.seek(0)
-        lines=file.readlines()
-        userid=[]
-        for line in lines :
-            user=line.split(',')
-            if user[2]==str(ctx.author.id) :
-                nickname=user[1]
-                if int(user[3])<1000:
-                    await ctx.send("복권을 살 돈이 부족합니다.(1000모아)")
-                    return
-                else :
-                    file_text=file_text.replace(f"{user[2]},{user[3]}",f"{user[2]},{'%010d'%(int(user[3])-1000)}")
-            userid.append(user[2])
-        if not str(ctx.author.id) in userid :
-            await ctx.send("가입을 해주세요.")
+    try:
+        if not canLotto :
+            await ctx.send("마감되었습니다.")
             return
-        while i<4 : 
-            num=random.randint(1,lottoRange)
-            if not num in number :
-                number[i]=num
-                i+=1
-        number.sort()
-        number.append(random.choice(number))
-        showtext+=nickname+"   "+str(number)+"\n"
-        writetext=""
-        for num in number :
-            writetext+=str(num)+","
-        writetext+=str(ctx.author.id)+",\n"
-        file=open(f"lotto_{ctx.guild.id}","a")
-        file.write(writetext)
-        file.close()
-        file=open(f"user_info{ctx.guild.id}","w")
-        file.write(file_text)
-        file.close()
-    showtext+="```"
-    await ctx.send(showtext)
-    await CheckLotto(f"lotto_{ctx.guild.id}",ctx)
+        amount=int(amount)
+        await BuyLotto(ctx,amount,False)
+    except Exception as e:
+        await ctx.send(f"복권 (수량)\n{e}")
 
 async def CheckLotto(filename,ctx) :
     global canLotto
@@ -721,7 +684,60 @@ async def 복권확인(ctx) :
             showtext+=f"{user[0]},{user[1]},{user[2]},{user[3]}\n"
     showtext+="```"
     await ctx.send(showtext)
-            
+
+async def BuyLotto(ctx,amount,FromBox):
+    global Lottomax
+    global lottoRange
+    showtext="```"
+    nickname=""
+    filename=f"user_info{ctx.guild.id}"
+    if int(amount)>Lottomax and not FromBox:
+        await ctx.send(f"한번에 {Lottomax}개까지 구매 가능합니다.")
+        return
+    for num in range(amount) :
+        i=0
+        number=[0,0,0,0]
+        num=0
+        file=open(filename,"r")
+        file_text=file.read()
+        file.seek(0)
+        lines=file.readlines()
+        userid=[]
+        for line in lines :
+            user=line.split(',')
+            if user[2]==str(ctx.author.id) :
+                nickname=user[1]
+                if int(user[3])<1000:
+                    await ctx.send("복권을 살 돈이 부족합니다.(1000모아)")
+                    return
+                else :
+                    file_text=file_text.replace(f"{user[2]},{user[3]}",f"{user[2]},{'%010d'%(int(user[3])-1000)}")
+            userid.append(user[2])
+        if not str(ctx.author.id) in userid :
+            await ctx.send("가입을 해주세요.")
+            return
+        while i<4 : 
+            num=random.randint(1,lottoRange)
+            if not num in number :
+                number[i]=num
+                i+=1
+        number.sort()
+        number.append(random.choice(number))
+        showtext+=nickname+"   "+str(number)+"\n"
+        writetext=""
+        for num in number :
+            writetext+=str(num)+","
+        writetext+=str(ctx.author.id)+",\n"
+        file=open(f"lotto_{ctx.guild.id}","a")
+        file.write(writetext)
+        file.close()
+        file=open(f"user_info{ctx.guild.id}","w")
+        file.write(file_text)
+        file.close()
+    showtext+="```"
+    await ctx.send(showtext)
+    await CheckLotto(f"lotto_{ctx.guild.id}",ctx)
+
 #endregion   
     
 @commands.cooldown(1, 2, commands.BucketType.default)
@@ -1084,15 +1100,15 @@ async def BuyBox(message,reuser):
     count=1
     writetext=""
     
-    if os.path.isfile(f"forceitem{message.author.id}"):
-        file=open(f"forceitem{message.author.id}","r")
+    if os.path.isfile(f"forceitem{reuser.id}"):
+        file=open(f"forceitem{reuser.id}","r")
         lines=file.readlines()
         for line in lines :
             have=line.split(':')
             amount=int(have[1])
             haveitem.append(amount)
     else:
-        file=open(f"forceitem{message.author.id}","w")
+        file=open(f"forceitem{reuser.id}","w")
         for percentkey in getPercent.keys() :
             writetext+=f"{percentkey}:0:\n"
             haveitem.append(0)
@@ -1147,22 +1163,116 @@ async def BuyBox(message,reuser):
         print(f"{get}:{haveitem[list(keys).index(get)]+1}")
 
         file_text=file_text.replace(f"{get}:{haveitem[list(keys).index(get)]}",f"{get}:{haveitem[list(keys).index(get)]+1}")
-        file=open(f"forceitem{message.author.id}","w")
+        file=open(f"forceitem{reuser.id}","w")
         file.write(file_text)
         file.close()
 
         await ctx.send(f"{nickname}, '{get}'획득!")
-        await setluckypang(6000,ctx)
+        await setluckypang(need,ctx)
     #endregion
             
 
 
-async def CheckItem(message,reuser):
-    file=open(f"forceitem{message.author.id}","r")
+async def CheckItem(message,reuser):    
+    file=open(f"forceitem{reuser.id}","r")
     file_text=file.read()
     file.close()
     await message.channel.send('```'+file_text+'```')
 
+
+@commands.cooldown(1, 2, commands.BucketType.default)
+@bot.command()
+async def 아이템사용(ctx,itemname=None):
+    if itemname==None:
+        await ctx.send("사용할 아이템 이름을 입력해주세요.")
+        return
+
+    itemlist=[]
+    itemhave=[]
+    itemfile=open(f"forceitem{ctx.author.id}","r")
+    itemtext=itemfile.read()
+    itemfile.seek(0)
+    itemlines=itemfile.readlines()
+    itemfile.close()
+
+    useitem=""
+    gethave=0
+    for line in itemlines :
+        info=line.split(':')
+        itemlist.append(info[0])
+        itemhave.append(int(info[1]))
+
+    if itemname in itemlist:
+        useitem=itemname
+        gethave=itemhave[itemlist.index(itemname)]
+    else:
+        await ctx.send("아이템 이름을 잘못입력했습니다.")
+        return
+
+    if gethave<0:
+        return
+
+    if str(useitem).startswith("복권"):
+        print(useitem)
+        intfind=re.findall("\d+",useitem)
+        await BuyLotto(ctx,int(intfind[0]),True)
+        return
+    else :
+        await ctx.send("아이템 사용은 복권 교환권만 가능합니다.")
+
+@commands.cooldown(1, 2, commands.BucketType.default)
+@bot.command()
+async def 아이템구매(ctx):
+    tradefile = open('trade.csv', 'r')
+    filetext=tradefile.read()
+    await ctx.send(filetext)
+    tradefile.close()
+    return
+
+@commands.cooldown(1, 2, commands.BucketType.default)
+@bot.command()
+async def 아이템판매(ctx,itemname=None,price=None):
+    try:
+        if itemname==None:
+            raise Exception("아이템 이름을 입력해주세요.")
+
+        if price==None:
+            raise Exception("팔 가격을 입력해주세요.")
+
+        itemlist=[]
+        itemhave=[]
+        itemfile=open(f"forceitem{ctx.author.id}","r")
+        itemtext=itemfile.read()
+        itemfile.seek(0)
+        itemlines=itemfile.readlines()
+        itemfile.close()
+
+        for line in itemlines :
+            info=line.split(':')
+            itemlist.append(info[0])
+            itemhave.append(int(info[1]))
+
+        itemfile=open(f"forceitem{ctx.author.id}","r")
+        itemtext=itemfile.read()
+        itemfile.close()
+        
+
+        itemtext=itemtext.replace(f"{itemname},{itemhave[itemlist.index(itemname)]}",f"{itemname},{itemhave[itemlist.index(itemname)]-1}")
+        itemfile=open(f"forceitem{ctx.author.id}","w")
+        itemfile.write(itemtext)
+        itemfile.close()
+        if itemname in itemlist:
+            tradefile = open('trade.csv', 'at', newline="")
+            writer = csv.writer(tradefile)
+            
+            writer.writerow([itemname,int(price),ctx.author.id])
+            tradefile.close()
+        else :
+            await ctx.send("존재하지 않는 아이템입니다.")
+            return
+    except Exception as e :
+        await ctx.send(f"{e}\n$아이템판매 '(아이템 이름)' (판매 가격)")
+        
 
 print(f"testmode : {testmode}")
 
