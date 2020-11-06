@@ -19,7 +19,7 @@ import re
 bot = commands.Bot(command_prefix='$')
 
 token=""
-version="V1.1.1"
+version="V1.1.1.1"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -1204,18 +1204,25 @@ async def 아이템사용(ctx,itemname=None):
 
     if itemname in itemlist:
         useitem=itemname
-        gethave=itemhave[itemlist.index(itemname)]
+        gethave=itemhave[itemlist.index(useitem)]
     else:
         await ctx.send("아이템 이름을 잘못입력했습니다.")
         return
 
-    if gethave<0:
+    print(gethave)
+
+    if gethave<=0:
+        await ctx.send("가지고 있지 않는 아이템입니다.")
         return
 
     if str(useitem).startswith("복권"):
         print(useitem)
         intfind=re.findall("\d+",useitem)
         await BuyLotto(ctx,int(intfind[0]),True)
+        itemtext=itemtext.replace(f"{useitem}:{gethave}",f"{useitem}:{gethave-1}")
+        itemfile=open(f"forceitem{ctx.author.id}","w")
+        itemfile.write(itemtext)
+        itemfile.close()
         return
     else :
         await ctx.send("아이템 사용은 복권 교환권만 가능합니다.")
