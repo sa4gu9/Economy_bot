@@ -19,7 +19,7 @@ import re
 bot = commands.Bot(command_prefix='$')
 
 token=""
-version="V1.1.1.1"
+version="V1.1.1.2"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -1155,7 +1155,7 @@ async def BuyBox(message,reuser):
                get=percentkey
                break
 
-        file=open(f"forceitem{message.author.id}","r")
+        file=open(f"forceitem{reuser.id}","r")
         file_text=file.read()
         file.close()
 
