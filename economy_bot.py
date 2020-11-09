@@ -19,7 +19,7 @@ import re
 bot = commands.Bot(command_prefix='$')
 
 token=""
-version="V1.1.1.2"
+version="V1.1.2"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -1229,12 +1229,134 @@ async def 아이템사용(ctx,itemname=None):
 
 @commands.cooldown(1, 2, commands.BucketType.default)
 @bot.command()
-async def 아이템구매(ctx):
+async def 아이템구매(ctx,itemno=None):
+    writetext=""
+    getPercent={"복권 1개":35,"복권 3개":26,"복권 5개":16,"복권 7개":10,"복권 10개":6,"복권 20개":3,"성공시 4렙업":1,"파괴방지":2,"강화비용면제":1}
+    #상자 구매 이력이 없으면 파일 생성
+    if not os.path.isfile(f"forceitem{ctx.author.id}"):
+        file=open(f"forceitem{ctx.author.id}","w")
+        for percentkey in getPercent.keys() :
+            writetext+=f"{percentkey}:0:\n"
+        print(writetext)
+        file.write(writetext)
+
+
+    showtext='```'
     tradefile = open('trade.csv', 'r')
-    filetext=tradefile.read()
-    await ctx.send(filetext)
+    filetextline=tradefile.readlines()
     tradefile.close()
-    return
+    i=0
+    for line in filetextline :
+        i+=1
+        info=line.split(',')
+        showtext+=f"{i} : {info[0]},{info[1]}\n"
+    
+    showtext+='```'
+    if itemno==None:
+        await ctx.send(showtext)
+    else :
+        if int(itemno)<len(filetextline)+1: 
+            #filetextline[int(itemno)-1]을 split해서 정보 가져오기
+            realinfo=filetextline[int(itemno)-1].split(',')
+            buyitem=realinfo[0]
+            buyprice=int(realinfo[1])
+            owner=realinfo[2]
+            ownerhavingmoney=0
+            ownernick=""
+
+            buyindex=0
+            sellindex=0
+            
+
+            #userfile 오픈후 readline으로 정보 가져옴
+            userfile=open(f"user_info{ctx.guild.id}","r")
+            userfilelines=userfile.readlines()
+            userfile.close()
+            
+
+            havingmoney=0
+            i=0
+            #readline으로 가져온 걸로 for문을 돌려 구매자 닉네임과 보유금액, 판매자 닉네임 가져오기
+            for user in userfilelines:
+                userinfo=user.split(',')
+                if userinfo[2]==str(ctx.author.id):
+                    havingmoney=int(userinfo[3])
+                    buyindex=i
+                elif userinfo[2]==owner:
+                    ownernick=userinfo[1]
+                    sellindex=i
+                    ownerhavingmoney=int(userinfo[3])
+
+                i+=1
+
+            
+            if owner==str(ctx.author.id):
+                await ctx.send("자신이 판매한 물건은 구매할 수 없습니다.")
+                return
+
+            #살 돈이 있다면 구매자의 돈을 빼고 그 돈의 10%를 제외한 돈을 판매자에게 지급
+            if havingmoney>=buyprice:
+                userfilelines[buyindex]=userfilelines[buyindex].replace(f"{ctx.author.id},{'%010d'%havingmoney}",f"{ctx.author.id},{'%010d'%(havingmoney-buyprice)}")
+                userfilelines[sellindex]=userfilelines[sellindex].replace(f"{owner},{'%010d'%ownerhavingmoney}",f"{owner},{'%010d'%(ownerhavingmoney+math.floor(buyprice*0.9))}")
+            else :
+                await ctx.send(f"{buyprice-havingmoney}모아가 부족합니다.")
+                return
+
+            writetext=""
+            for line in userfilelines:
+                writetext+=line
+            userfile=open(f"user_info{ctx.guild.id}","w")
+            userfile.write(writetext)
+            userfile.close()
+            
+            for line in filetextline:
+                writetext+=line
+
+            #userfile 오픈후 파일쓰기
+            userfile=open(f"trade.csv","w")
+            userfile.write(writetext)
+            userfile.close()
+
+            #구매자 아이템 보유 정보 수정
+            itemfile=open(f"forceitem{ctx.author.id}","r")
+            itemfilelines=itemfile.readlines()
+            itemfile.close()
+
+            writetext=""
+            for line in itemfilelines:
+                item=line.split(':')
+                if item[0]==buyitem:
+                    line=line.replace(f"{item[0]}:{item[1]}",f"{item[0]}:{int(item[1])+1}")
+                writetext+=line
+
+            
+            itemfile=open(f"forceitem{ctx.author.id}","w")
+            itemfile.write(writetext)
+            itemfile.close()
+
+
+
+            #거래시장 csv 수정
+            filetextline.pop(int(itemno)-1)
+
+            writetext=""
+            print(filetextline)
+            for line in filetextline :
+                if line!="" :
+                    writetext+=line
+
+            tradefile = open('trade.csv', 'w', newline="")
+            tradefile.write(writetext)
+            tradefile.close()
+
+            
+
+
+            #구매, 판매 완료 보내기
+            await ctx.send("구매 완료")
+
+        else :
+            return
 
 @commands.cooldown(1, 2, commands.BucketType.default)
 @bot.command()
@@ -1262,9 +1384,15 @@ async def 아이템판매(ctx,itemname=None,price=None):
         itemfile=open(f"forceitem{ctx.author.id}","r")
         itemtext=itemfile.read()
         itemfile.close()
-        
 
-        itemtext=itemtext.replace(f"{itemname},{itemhave[itemlist.index(itemname)]}",f"{itemname},{itemhave[itemlist.index(itemname)]-1}")
+        print(itemtext)
+
+        if itemhave[itemlist.index(itemname)]>0:
+            itemtext=itemtext.replace(f"{itemname}:{itemhave[itemlist.index(itemname)]}",f"{itemname}:{itemhave[itemlist.index(itemname)]-1}")
+        else :
+            await ctx.send(f"'{itemname}'가 없습니다.")
+            return
+        
         itemfile=open(f"forceitem{ctx.author.id}","w")
         itemfile.write(itemtext)
         itemfile.close()
@@ -1272,7 +1400,7 @@ async def 아이템판매(ctx,itemname=None,price=None):
             tradefile = open('trade.csv', 'at', newline="")
             writer = csv.writer(tradefile)
             
-            writer.writerow([itemname,int(price),ctx.author.id])
+            writer.writerow([itemname,int(price),ctx.author.id,None])
             tradefile.close()
         else :
             await ctx.send("존재하지 않는 아이템입니다.")
