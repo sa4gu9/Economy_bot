@@ -15,6 +15,9 @@ import sched
 import datetime
 import csv
 import re
+import shutil
+import sys
+import glob
 
 bot = commands.Bot(command_prefix='$')
 
@@ -51,8 +54,33 @@ else :
     Lottomax=3
     token = "NzY4MjgzMjcyOTQ5Mzk5NjEy.X4-Njg.NfyDMPVlLmgLAf8LkX9p0s04QDY"
     maxlucky=10000000
+
+   
+
+
+seasonfile=open("ispreseason","r")
+seasoncheck=seasonfile.read()
+seasonfile.close()
+
+ispreseason=False
+if seasoncheck=="false":
+    print("is not preseason")
+    ispreseason=False
+elif seasoncheck=="true" :
+    print("is preseason")
+    ispreseason=True
+else :
+    print("error")
+    sys.exit()
+
+lottoRange=0
+if ispreseason: 
+    lottoRange=8
+else :
+    lottoRange=10
     
-lottoRange=10
+
+
 
 
 @bot.event
@@ -64,7 +92,7 @@ async def on_message(tempmessage) :
 
     if str(tempmessage.content).startswith('$') :
         if cancommand :
-            if tempmessage.channel.id!=771203131836989443 and tempmessage.channel.id!=709647685417697372 :
+            if tempmessage.channel.id!=771203131836989443 and tempmessage.channel.id!=709647685417697372 and tempmessage.channel.id!=775626447854764063:
                 await tempmessage.channel.send("봇 전용 채널에서만 사용 가능합니다.")
                 return
             else :
@@ -234,17 +262,27 @@ async def doforce(message,reuser,mode):
                 nickname=user_info[1]
         
         need=get_need(level)
+
+        if level>=32:
+            await ctx.send("강화를 완료한 의문의 물건입니다. 판매시 시즌이 종료됩니다.")
+            return
         
 
-        if level !=29 :
+        if level <=29 :
             cri_success=0.05*(30-level)
         else :
             cri_success=0.0
 
-        if level<15 :
-            destroy=0.0
+        if not ispreseason:
+            if level<15 :
+                destroy=0.0
+            else :
+                destroy=1.41*(level-29)+20
         else :
-            destroy=1.41*(level-29)+20
+            if level==1 :
+                destroy=0.0
+            else :
+                destroy=0.37*(level-29)+10
 
         success=100-3.2*level
         fail=get_fail(level)
@@ -254,29 +292,31 @@ async def doforce(message,reuser,mode):
 
         if NotDestroy:
             if destroy!=0:
-                need=math.floor(need*1.1)
+                if not ispreseason:
+                    need=math.floor(need*1.1)
                 not_change+=destroy
                 destroy=0
             else :
                 await ctx.send("파괴 방지가 불가능합니다.")
                 return
-        
         if FastUp :
             if level>23:
                 await ctx.send("24렙 이상은 4렙 업 찬스를 사용할 수 없습니다.")
                 return
             else :
-                need=need*2
+                if ispreseason:
+                    need=math.floor(need*1.3)
+                else :
+                    need=need*2
+
+        
+        if level == 0 :
+            await ctx.send("의문의 물건을 가지고 있지 않습니다.")
+            break
 
         if need>moa :
             await ctx.send(f"{need-moa}모아가 부족합니다.")
             break
-        if level == 30 : 
-            await ctx.send("이미 의문의 물건 +30을 가지고 있습니다.")
-            break
-        elif level == 0 :
-            await ctx.send("의문의 물건을 가지고 있지 않습니다.")
-            break      
 
         result=random.random()*100
 
@@ -303,7 +343,6 @@ async def doforce(message,reuser,mode):
         else :
             change=-10
         
-        print(change)
 
         if change!=-10 :
             file_text=file_text.replace(f"{reuser.id},{'%010d'%moa},{level}",f"{reuser.id},{'%010d'%(moa-need)},{level+change}")
@@ -322,45 +361,76 @@ async def doforce(message,reuser,mode):
         file.close()
 
         if change<=0:
-            totalfailneed+=need
+            totalfailneed+=math.floor(need*0.1)
         asyncio.sleep(0.1)
     #endregion
     if totalfailneed!=0:
         await setluckypang(math.floor(totalfailneed*0.1),message.channel)
 
 async def sellforce(message,reuser) :
+    global ispreseason
     ctx=message.channel
     level=0
-    before=0
-    after=0
-    change=0
 
     file=open(f"user_info{message.guild.id}","r")
-    file_text=file.read()
     file.seek(0)
     lines=file.readlines()
     file.close()
 
+    nickname=""
+
     for user in lines :
         user_info=user.split(',')
         if user_info[2]==str(reuser.id):
+            nickname=user_info[1]
             level=int(user_info[4])
-            moa=int(user_info[3])
 
 
     if level<=1 :
         await ctx.author.send(f"의문의 물건이 +1이거나 가지고 있지 않습니다.")
         return
     
-    pricebuy,pricesell=get_price(level)
+    pricesell=get_price(level)[1]
 
-    file_text=file_text.replace(f"{reuser.id},{'%010d'%moa},{level}",f"{reuser.id},{'%010d'%(moa+pricesell)},0")
+    givemoney(ctx,nickname,pricesell)
 
-    file=open(f"user_info{message.guild.id}","w")
-    file.write(file_text)
-    file.close()
+    if level>=32:
+        await ctx.send("32강을 완성하여 시즌이 종료되었습니다. 관련 공지가 있을때까지 프리시즌이 유지됩니다.")
 
-    writetext=""
+        #럭키팡, 강화매물 0으로 리셋
+        os.remove("luckypang")
+        shutil.copy("../default/luckypang","./")
+        os.remove("forcestore")
+        shutil.copy("../default/forcestore","./")
+
+        #유저 정보 삭제
+        os.remove(f"user_info{message.guild.id}")
+
+        #거래시장 매물 삭제
+        if os.path.isfile("trade.csv"):
+            os.remove(f"trade.csv")
+
+        #복권보유정보 삭제
+        if os.path.isfile(f"lotto_{ctx.guild.id}"):
+            os.remove(f"lotto_{ctx.guild.id}")
+        
+
+        #아이템보유정보 삭제
+        fileList = glob.glob('./forceitem*')
+        print(fileList)
+        for filePath in fileList:
+            try:
+                os.remove(filePath)
+            except:
+                print("Error while deleting file : ", filePath)
+
+        #프리시즌 전환
+        prefile=open("ispreseason","w")
+        prefile.write("true")
+        prefile.close()
+        ispreseason=True
+        return
+
     file=open("forcestore","r")
     fileline=file.readlines()
     file.seek(0)
@@ -489,13 +559,11 @@ async def 버전(ctx) :
 
 @commands.cooldown(1, 2, commands.BucketType.default)
 @bot.command()
-async def 베팅(ctx,mode=None,moa=None) :
+async def 베팅(ctx,mode=None,moa=10000) :
     try :
         success=True
         file=open(f"user_info{ctx.guild.id}","r")
         lines=file.readlines()
-        file.seek(0)
-        file_text=file.read()
         money=0
         nickname=""
         for line in lines :
@@ -509,13 +577,10 @@ async def 베팅(ctx,mode=None,moa=None) :
             raise Exception('베팅할 돈이 없습니다.')
         if mode==None : 
             raise Exception("모드를 입력해주세요.")
-        if int(mode)==6 and moa!=None:
-            raise Exception("올인모드는 모아를 입력할수 없습니다.")
+
         if int(mode)==6 :
             moa=money
 
-        if moa==None :  
-            raise Exception("모아를 입력해주세요.")
         if money<int(moa) or int(moa)<0 : 
             raise Exception("보유량보다 많거나 0원 미만으로 베팅하실 수 없습니다.")
         if int(mode)>6 or int(mode)<1 : 
@@ -527,23 +592,22 @@ async def 베팅(ctx,mode=None,moa=None) :
     result=random.randrange(0,100)
     lose=int(moa)
     end=0
+    profit=0
     if result<chance : 
         profit=math.floor(multiple*int(moa))
-        end=money-lose+profit
         await ctx.send(f"{nickname} 베팅 성공!")
         success=True
     else :
-        end=money-int(moa)
         await ctx.send(f"{nickname} 베팅 실패!")
         save2=random.randrange(0,100)
         success=False
         if save2<10 :
             end+=math.floor(int(moa)*0.3)
             await ctx.send("건 돈의 30% 지급")
-    file=open(f"user_info{ctx.guild.id}","w")
-    file_text=file_text.replace(f"{ctx.author.id},{'%010d'%money}",f"{ctx.author.id},{'%010d'%end}")
-    file.write(file_text)
-    file.close()
+    
+    
+    givemoney(ctx,nickname,profit-lose)
+
 
     if not success :
         await setluckypang(math.floor(int(moa)*0.1),ctx)
@@ -552,17 +616,20 @@ async def 베팅(ctx,mode=None,moa=None) :
 
 @bot.command()
 async def 모두(ctx) :
-    file=open(f"user_info{ctx.guild.id}","r")
-    lines=file.readlines()
-    file.close()
+    try :
+        file=open(f"user_info{ctx.guild.id}","r")
+        lines=file.readlines()
+        file.close()
 
-    showtext="```"
+        showtext="```"
 
-    for line in lines :
-        user=line.split(',')
-        showtext+=f"{user[1]} {int(user[3])}\n"
-    showtext+="```"
-    await ctx.send(showtext)
+        for line in lines :
+            user=line.split(',')
+            showtext+=f"{user[1]} {int(user[3])}\n"
+        showtext+="```"
+        await ctx.send(showtext)
+    except Exception as e :
+        await ctx.send("가입한 사람이 없습니다.")
 
 @bot.command()
 @commands.cooldown(1, 10, commands.BucketType.default)
@@ -632,35 +699,29 @@ async def CheckLotto(filename,ctx) :
                     if special==int(submit[4]):
                         place=1
                         getprice=math.floor(totalSell*5)
-                        winner[3].append(submit[4])
+                        winner[3].append(submit[5])
                     else :
                         place=2
                         getprice=math.floor(totalSell*0.7)
-                        winner[2].append(submit[4])
+                        winner[2].append(submit[5])
                 elif correct==3:
                     place=3
                     getprice=math.floor(totalSell*0.15)
-                    winner[1].append(submit[4])
+                    winner[1].append(submit[5])
                 elif correct==2:
                     place=4
                     getprice=math.floor(totalSell*0.05)
-                    winner[0].append(submit[4])
+                    winner[0].append(submit[5])
 
             userfile=open(f"user_info{ctx.guild.id}","r")
-            file_text=userfile.read()
-            userfile.seek(0)
             userdata=userfile.readlines()
             file.close()
             for sub in userdata :
                 cuser=sub.split(',')               
                 if submit[5]==cuser[2]:
                     nickname=cuser[1]
-                    print(f"{cuser[2]},{'%010d'%(int(cuser[3]))}")
-                    print(f"{cuser[2]},{'%010d'%(int(cuser[3])+getprice)}")
-                    file_text=file_text.replace(f"{cuser[2]},{'%010d'%(int(cuser[3]))}",f"{cuser[2]},{'%010d'%(int(cuser[3])+getprice)}")
-            file=open(f"user_info{ctx.guild.id}","w")
-            file.write(file_text)
-            file.close()
+                    givemoney(ctx,nickname,getprice)
+
             if place!=0:
                 showtext+=f"{nickname} {place}등 당첨! {getprice}모아 지급! [{submit[0]},{submit[1]},{submit[2]},{submit[3]},{submit[4]}]\n"
         showtext+="```"
@@ -670,7 +731,6 @@ async def CheckLotto(filename,ctx) :
         Lottocool=random.randint(10,30)
             
 
-    
             
 @commands.cooldown(1, 0.5, commands.BucketType.default)
 @bot.command()
@@ -711,7 +771,7 @@ async def BuyLotto(ctx,amount,FromBox):
                     await ctx.send("복권을 살 돈이 부족합니다.(1000모아)")
                     return
                 else :
-                    file_text=file_text.replace(f"{user[2]},{user[3]}",f"{user[2]},{'%010d'%(int(user[3])-1000)}")
+                    givemoney(ctx,nickname,-1000)
             userid.append(user[2])
         if not str(ctx.author.id) in userid :
             await ctx.send("가입을 해주세요.")
@@ -731,9 +791,7 @@ async def BuyLotto(ctx,amount,FromBox):
         file=open(f"lotto_{ctx.guild.id}","a")
         file.write(writetext)
         file.close()
-        file=open(f"user_info{ctx.guild.id}","w")
-        file.write(file_text)
-        file.close()
+        
     showtext+="```"
     await ctx.send(showtext)
     await CheckLotto(f"lotto_{ctx.guild.id}",ctx)
@@ -752,10 +810,13 @@ async def 기부(ctx,nickname=None,moa=None) :
         
         if int(moa)<=0 : 
             raise Exception('0원이하로 기부할수 없습니다.')
-
         
+        #파일 읽어서 기부하는 사람의 닉네임, 기부받는 사람의 닉네임 받아들이기
+        givenickname=""
+        receivenickname=str(nickname).lower()
+
+
         file=open(f"user_info{ctx.guild.id}","r")
-        file_text=file.read()
         file.seek(0)
         lines=file.readlines()
         file.close()
@@ -763,20 +824,28 @@ async def 기부(ctx,nickname=None,moa=None) :
         for line in lines:
             user=line.split(',')
             if user[2]==str(ctx.author.id) :
+                givenickname=user[1]
                 if int(user[3])<int(moa) :
                     raise Exception("자신 보유 자산보다 많이 기부할수 없습니다.")
             nicknames.append(str(user[1]).lower())
-        if not str(nickname) in nicknames :
+        if not str(nickname).lower() in nicknames :
             raise Exception('닉네임을 잘못 입력했습니다.')
-        for line in lines:
-            user=line.split(',')
-            if user[1].lower()==str(nickname).lower() :
-                file_text=file_text.replace(f"{user[1]},{user[2]},{user[3]}",f"{user[1]},{user[2]},{'%010d'%(int(user[3])+int(moa))}")
-            if user[2]==str(ctx.author.id) :
-                file_text=file_text.replace(f"{user[2]},{user[3]}",f"{user[2]},{'%010d'%(int(user[3])-int(moa))}")
-        file=open(f"user_info{ctx.guild.id}","w")
-        file.write(file_text)
-        file.close()
+        
+        #기부 하는 사람이랑 기부 받는 사람이랑 닉네임 같으면 기부불가
+        if receivenickname==givenickname:
+            raise Exception('자신에게 기부할수 없습니다.')
+
+        #givemoney 2개 함수로 돈 조절
+        givemoney(ctx,receivenickname,int(moa))
+        givemoney(ctx,givenickname,-int(moa))
+
+
+
+        #기부 완료 메세지 보내기
+        await ctx.send(f"{givenickname}, {receivenickname}에게 {moa}모아 기부완료")
+
+
+        
     except Exception as e :
         await ctx.send(f"{e}\n$기부 (닉네임) (기부할 돈)")
         return
@@ -918,6 +987,9 @@ async def 구걸(ctx) :
     if i==13 :
         getmoa=2500
 
+    if ispreseason:
+        getmoa*=3
+
     print(money+getmoa)
     file_text=file_text.replace(f"{ctx.author.id},{'%010d'%money}",f"{ctx.author.id},{'%010d'%(money+getmoa)}")
     file=open(f"user_info{ctx.guild.id}","w")
@@ -996,11 +1068,6 @@ async def 강화구매(ctx,level=None):
             await ctx.send("의문의 물건은 1개만 보유할수 있습니다.")
             return
         
-        if level>30 : 
-            await ctx.send("의문의 물건은 1~29강만 구매할 수 있습니다.")
-            return
-
-        print(remainlist)
         if remainlist[level-1]<=0:
             await ctx.send(f"의문의 물건 +{level}의 매물이 없습니다.")
             return
@@ -1074,15 +1141,7 @@ async def setluckypang(price,ctx):
         money=int(moneys[nicknames.index(nickname)])
         userid=discordid[nicknames.index(nickname)]
 
-        print(f"{userid},{'%010d'%(money)}")
-        print(f"{userid},{'%010d'%(money+stack+price)}")
-        file_text=file_text.replace(f"{userid},{'%010d'%(money)}",f"{userid},{'%010d'%(money+stack+price)}")
-        editfile=open(f"user_info{ctx.guild.id}","w")
-        editfile.write(file_text)
-        editfile.close()
-        editfile=open(f"luckypang","w")
-        editfile.write(str(0))
-        editfile.close()
+        givemoney(ctx,nickname,stack+price)
 
         await ctx.send(f"{nickname} 럭키팡 당첨! {stack+price}모아 지급!")
     else :
@@ -1407,7 +1466,41 @@ async def 아이템판매(ctx,itemname=None,price=None):
             return
     except Exception as e :
         await ctx.send(f"{e}\n$아이템판매 '(아이템 이름)' (판매 가격)")
-        
+
+@bot.command()
+async def 운영자지급(ctx,nickname,moa) :
+    if ctx.author.id!=382938103435886592:
+        await ctx.send("권한이 없습니다.")
+        return
+
+    givemoney(ctx,nickname,moa)
+
+    
+
+    await ctx.send(f"{nickname}에게 {moa}모아 지급 완료")
+
+
+def givemoney(ctx,nickname,moa):
+    file=open(f"user_info{ctx.guild.id}","r")
+    lines=file.readlines()
+    file.close()
+
+    writetext=""
+    index=0
+    getid=0
+    gethavemoney=0
+    for line in lines :
+        user=line.split(',')
+        if user[1].lower()==nickname.lower():
+            getid=user[2]
+            gethavemoney=int(user[3])
+            lines[index]=lines[index].replace(f"{getid},{'%010d'%gethavemoney}",f"{getid},{'%010d'%(gethavemoney+int(moa))}")
+        writetext+=lines[index]
+        index+=1
+
+    file=open(f"user_info{ctx.guild.id}","w")
+    file.write(writetext)
+    file.close()
 
 print(f"testmode : {testmode}")
 
