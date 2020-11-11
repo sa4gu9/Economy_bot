@@ -22,7 +22,7 @@ import glob
 bot = commands.Bot(command_prefix='$')
 
 token=""
-version="V1.1.3"
+version="V1.1.3.1"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -561,6 +561,7 @@ async def 버전(ctx) :
 @bot.command()
 async def 베팅(ctx,mode=None,moa=10000) :
     try :
+        bonusback=0
         success=True
         file=open(f"user_info{ctx.guild.id}","r")
         lines=file.readlines()
@@ -591,7 +592,6 @@ async def 베팅(ctx,mode=None,moa=10000) :
     chance,multiple=get_chance_multiple(int(mode))
     result=random.randrange(0,100)
     lose=int(moa)
-    end=0
     profit=0
     if result<chance : 
         profit=math.floor(multiple*int(moa))
@@ -602,11 +602,11 @@ async def 베팅(ctx,mode=None,moa=10000) :
         save2=random.randrange(0,100)
         success=False
         if save2<10 :
-            end+=math.floor(int(moa)*0.3)
+            bonusback=math.floor(lose*0.3)
             await ctx.send("건 돈의 30% 지급")
     
     
-    givemoney(ctx,nickname,profit-lose)
+    givemoney(ctx,nickname,profit-lose+bonusback)
 
 
     if not success :
@@ -1502,6 +1502,8 @@ def givemoney(ctx,nickname,moa):
     file.write(writetext)
     file.close()
 
+print(f"testmode : {testmode}")
+print(f"testmode : {testmode}")
 print(f"testmode : {testmode}")
 
 bot.run(token)
