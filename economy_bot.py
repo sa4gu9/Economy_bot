@@ -22,7 +22,7 @@ import glob
 bot = commands.Bot(command_prefix='$')
 
 token=""
-version="V1.1.2"
+version="V1.1.3"
 cancommand=True
 canLotto=True
 getnotice=False
