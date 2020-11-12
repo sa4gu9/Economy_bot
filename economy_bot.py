@@ -22,7 +22,7 @@ import glob
 bot = commands.Bot(command_prefix='$')
 
 token=""
-version="V1.1.3.1"
+version="V1.1.3.2"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -620,16 +620,26 @@ async def 모두(ctx) :
         file=open(f"user_info{ctx.guild.id}","r")
         lines=file.readlines()
         file.close()
-
+        userlist={}
         showtext="```"
 
         for line in lines :
             user=line.split(',')
-            showtext+=f"{user[1]} {int(user[3])}\n"
+            userlist[user[1]]=int(user[3])
+            print(userlist)
+
+
+        for key,value in userlist.items():
+            rank=1
+            for userhave in userlist.values():
+                if value<userhave:
+                    rank+=1
+            showtext+=f"{key} {value} {rank}위\n"
         showtext+="```"
         await ctx.send(showtext)
+            
     except Exception as e :
-        await ctx.send("가입한 사람이 없습니다.")
+        await ctx.send(f"{e}\n가입한 사람이 없습니다.")
 
 @bot.command()
 @commands.cooldown(1, 10, commands.BucketType.default)
