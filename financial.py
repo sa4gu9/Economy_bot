@@ -2,11 +2,11 @@ import asyncio
 import random
 import discord
 
-version="V1.0"
+version="V1.1"
 
 
 
-def givemoney(ctx,nickname,moa,mode=None,level=None):
+def givemoney(ctx,nickname,moa,mode=None,getlevel=None):
     file=open(f"user_info{ctx.guild.id}","r")
     lines=file.readlines()
     file.close()
@@ -28,18 +28,19 @@ def givemoney(ctx,nickname,moa,mode=None,level=None):
             elif mode==1:
                 lines[index]=lines[index].replace(f"{getid},{'%010d'%gethavemoney},{level}",f"{getid},{'%010d'%(gethavemoney+int(moa))},0")
             elif mode==2:
-                lines[index]=lines[index].replace(f"{getid},{'%010d'%(gethavemoney-int(moa))},0",f"{getid},{'%010d'%(gethavemoney-int(moa))},{level}")
-
+                lines[index]=lines[index].replace(f"{getid},{'%010d'%gethavemoney},{level}",f"{getid},{'%010d'%(gethavemoney-int(moa))},{getlevel}")
             #모드가 2일때 의문의 물건 구매
+        
         writetext+=lines[index]
         index+=1
-    
+
     if not nickname.lower() in nicknames:
         return 0
 
-    file=open(f"user_info{ctx.guild.id}","w")
-    file.write(writetext)
-    file.close()
+    with open(f"user_info{ctx.guild.id}","w") as f:
+        f.write(writetext)
+
+
 
 async def setluckypang(price,ctx,maxlucky):
 

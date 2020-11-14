@@ -6,7 +6,7 @@ from financial import givemoney,setluckypang
 import datareset
 import datetime
 
-version="V1.0"
+version="V1.1"
 
 
 async def doforce(message,reuser,mode,ispreseason,maxlucky):
@@ -277,13 +277,12 @@ async def buyforce(ctx,level):
     try :
         sale=False
         chour=datetime.datetime.now().time().hour
-        if datetime.datetime.now().weekday()==5 and (chour==13 or chour==21 or chour==17):
+        if (datetime.datetime.now().weekday()==5 or datetime.datetime.now().weekday()==6) and (chour==13 or chour==21 or chour==17):
             sale=True
 
 
         userid=[]
         nickname=""
-        money=0
         showtext="```"
 
         forcefile=open("forcestore","r")
@@ -294,8 +293,6 @@ async def buyforce(ctx,level):
         mylevel=0
 
         userfile=open(f"user_info{ctx.guild.id}","r")
-        userfile_text=userfile.read()
-        userfile.seek(0)
         userlines=userfile.readlines()
         userfile.close()
 
@@ -334,7 +331,6 @@ async def buyforce(ctx,level):
             if user[2]==str(ctx.author.id) :
                 nickname=user[1]
                 mylevel=int(user[4])
-                money=int(user[3])
             userid.append(user[2])
 
         if not str(ctx.author.id) in userid :
@@ -354,6 +350,8 @@ async def buyforce(ctx,level):
         else :
             price=get_price(level)[0]
 
+        print(price)
+
 
         
 
@@ -361,14 +359,12 @@ async def buyforce(ctx,level):
             userdata=user.split(',')
             if str(ctx.author.id)==userdata[2]:
                 if int(userdata[3])>=price :
-                    givemoney(ctx,nickname,price,2,level)
+                    value=givemoney(ctx,nickname,price,2,level)
+                    print(value)
                 else :
                     await ctx.send(f"{price-int(userdata[3])}모아가 부족합니다.")
                     return
         
-        file=open(f"user_info{ctx.guild.id}","w")
-        file.write(userfile_text)
-        file.close()
         forcefile_text.replace(f"{level},{remainlist[level-1]}",f"{level},{remainlist[level-1]-1}")
 
         
