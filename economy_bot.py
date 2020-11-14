@@ -35,7 +35,7 @@ getnotice=False
 testint=0
 testmode=False
 
-if testint==10:
+if testint==0:
     testmode=False
 else :
     testmode=True
