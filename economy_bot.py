@@ -28,7 +28,7 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='$',intents=intents)
 
 token=""
-version="V1.1.5"
+version="V1.1.5.1"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -183,6 +183,8 @@ async def on_reaction_add(reaction,user) :
             elif str(reaction.emoji)=="😀":
                 ispreseason=await sellforce(reaction.message,user)
                 forceMsg.remove(reaction.message.id)
+                if ispreseason:
+                    ispreseason=True
             elif str(reaction.emoji)=="🔥":
                 await doforce(reaction.message,user,3,ispreseason,maxlucky)
                 forceMsg.remove(reaction.message.id)
@@ -451,16 +453,16 @@ async def CheckLotto(filename,ctx) :
                 if correct==4 :
                     if special==int(submit[4]):
                         place=1
-                        getprice=1000
+                        getprice=5000000
                     else :
                         place=2
-                        getprice=5000
+                        getprice=1000000
                 elif correct==3:
                     place=3
-                    getprice=1000000
+                    getprice=5000
                 elif correct==2:
                     place=4
-                    getprice=5000000
+                    getprice=1000
 
             userfile=open(f"user_info{ctx.guild.id}","r")
             userdata=userfile.readlines()
