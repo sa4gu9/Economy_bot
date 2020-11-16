@@ -23,17 +23,18 @@ from financial import givemoney,setluckypang
 import reinforce
 import financial
 import seasonmanage
+import time
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='$',intents=intents)
 
 token=""
-version="V1.1.5.1"
+version="V1.1.5.2"
 cancommand=True
 canLotto=True
 getnotice=False
 
-testint=0
+testint=1
 testmode=False
 
 if testint==0:
@@ -319,9 +320,13 @@ async def 베팅(ctx,mode=None,moa=10000) :
             raise Exception('베팅할 돈이 없습니다.')
         if mode==None : 
             raise Exception("모드를 입력해주세요.")
-
+        
         if int(mode)==6 :
-            moa=math.floor(money*0.5)
+            if moa==10000:
+                moa=math.floor(money*0.5)
+            else :
+                await ctx.send("베팅 6은 보유액의 절반만 가능합니다.")
+                return
 
         if money<int(moa) or int(moa)<0 : 
             raise Exception("보유량보다 많거나 0원 미만으로 베팅하실 수 없습니다.")
@@ -496,7 +501,7 @@ async def 복권확인(ctx) :
     showtext+="```"
     await ctx.send(showtext)
 
-async def BuyLotto(ctx,amount,FromBox):
+async def BuyLotto(ctx,amount,FromBox=False):
     global Lottomax
     global lottoRange
     if ispreseason: 
@@ -520,11 +525,12 @@ async def BuyLotto(ctx,amount,FromBox):
             user=line.split(',')
             if user[2]==str(ctx.author.id) :
                 nickname=user[1]
-                if int(user[3])<1000:
-                    await ctx.send("복권을 살 돈이 부족합니다.(1000모아)")
-                    return
-                else :
-                    givemoney(ctx,nickname,-1000)
+                if not FromBox:
+                    if int(user[3])<1000:
+                        await ctx.send("복권을 살 돈이 부족합니다.(1000모아)")
+                        return
+                    else :
+                        givemoney(ctx,nickname,-1000)
             userid.append(user[2])
         if not str(ctx.author.id) in userid :
             await ctx.send("가입을 해주세요.")
@@ -878,11 +884,9 @@ async def 아이템사용(ctx,itemname=None):
         await ctx.send("사용할 아이템 이름을 입력해주세요.")
         return
 
-    itemlist=[]
-    itemhave=[]
+    itemlist=getPercent.keys()
+    itemhave={}
     itemfile=open(f"forceitem{ctx.author.id}","r")
-    itemtext=itemfile.read()
-    itemfile.seek(0)
     itemlines=itemfile.readlines()
     itemfile.close()
 
@@ -890,38 +894,46 @@ async def 아이템사용(ctx,itemname=None):
     gethave=0
     for line in itemlines :
         info=line.split(':')
-        itemlist.append(info[0])
-        itemhave.append(int(info[1]))
+        itemhave[info[0]]=int(info[1])
 
     if itemname in itemlist:
         useitem=itemname
-        gethave=itemhave[itemlist.index(useitem)]
+        if itemname in itemhave.keys():
+            itemhave[itemname]-=1
+        else :
+            await ctx.send("가지고 있지 않는 아이템입니다.")
     else:
         await ctx.send("아이템 이름을 잘못입력했습니다.")
         return
 
 
-    if gethave<=0:
-        await ctx.send("가지고 있지 않는 아이템입니다.")
-        return
+    if itemhave[itemname]<=0:
+        itemhave.pop(itemname)
+        print(itemhave)
+
+    writetext=""
+    for key,value in itemhave.items():
+        writetext+=f"{key}:{value}:\n"
+    itemfile=open(f"forceitem{ctx.author.id}","w")
+    itemfile.write(writetext)
+    itemfile.close()
+
 
     if str(useitem).startswith("복권"):
         intfind=re.findall("\d+",useitem)
         await BuyLotto(ctx,int(intfind[0]),True)
-        itemtext=itemtext.replace(f"{useitem}:{gethave}",f"{useitem}:{gethave-1}")
-        itemfile=open(f"forceitem{ctx.author.id}","w")
-        itemfile.write(itemtext)
         itemfile.close()
         return
+    elif str(useitem)=="성공시 4렙업":
+        await doforce(ctx,ctx.author,4,ispreseason,maxlucky,True)
     else :
-        await ctx.send("아이템 사용은 복권 교환권만 가능합니다.")
+        await ctx.send("아이템 사용은 복권 교환권과 '성공시 4렙업'만 가능합니다.")
 
 @commands.cooldown(1, 2, commands.BucketType.default)
 @bot.command()
 async def 아이템구매(ctx,itemno=None):
     itemhave={}
     writetext=""
-    itemname=""
     #상자 구매 이력이 없으면 파일 생성
     if not os.path.isfile(f"forceitem{ctx.author.id}"):
         file=open(f"forceitem{ctx.author.id}","w")
@@ -1120,4 +1132,6 @@ print(f"testmode : {testmode}")
 print(f"testmode : {testmode}")
 print(f"testmode : {testmode}")
 
+
+time.sleep(10)
 bot.run(token)

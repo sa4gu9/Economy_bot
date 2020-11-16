@@ -6,10 +6,10 @@ from financial import givemoney,setluckypang
 import datareset
 import datetime
 
-version="V1.2"
+version="V1.3"
 
 
-async def doforce(message,reuser,mode,ispreseason,maxlucky):
+async def doforce(message,reuser,mode,ispreseason,maxlucky,useitem=False):
     NotDestroy=False
     FastUp=False
     count=1
@@ -96,10 +96,11 @@ async def doforce(message,reuser,mode,ispreseason,maxlucky):
                 await ctx.send("24렙 이상은 4렙 업 찬스를 사용할 수 없습니다.")
                 return
             else :
-                if ispreseason:
-                    need=math.floor(need*1.3)
-                else :
-                    need=need*2
+                if not useitem :
+                    if ispreseason:
+                        need=math.floor(need*1.3)
+                    else :
+                        need=need*2
 
         if mode==5:
             need*=20
