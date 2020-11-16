@@ -2,7 +2,7 @@ import asyncio
 import random
 import discord
 
-version="V1.1"
+version="V1.2"
 
 
 
@@ -53,29 +53,22 @@ async def setluckypang(price,ctx,maxlucky):
 
     if stack+price>=maxlucky:
         nicknames=[]
-        moneys=[]
-        discordid=[]
-        money=0
-        userid=0
 
         userfile=open(f"user_info{ctx.guild.id}","r")
-        file_text=userfile.read()
-        userfile.seek(0)
         userlines=userfile.readlines()
         userfile.close()
         for user in userlines:
             userinfo=user.split(',')
             nicknames.append(userinfo[1])
-            discordid.append(userinfo[2])
-            moneys.append(userinfo[3])
-        
         
     
         nickname=random.choice(nicknames)
-        money=int(moneys[nicknames.index(nickname)])
-        userid=discordid[nicknames.index(nickname)]
 
         givemoney(ctx,nickname,stack+price)
+
+        file=open("luckypang","w")
+        file.write("0")
+        file.close()
 
         await ctx.send(f"{nickname} 럭키팡 당첨! {stack+price}모아 지급!")
     else :

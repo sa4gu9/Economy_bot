@@ -6,7 +6,7 @@ from financial import givemoney,setluckypang
 import datareset
 import datetime
 
-version="V1.1"
+version="V1.2"
 
 
 async def doforce(message,reuser,mode,ispreseason,maxlucky):
@@ -101,6 +101,8 @@ async def doforce(message,reuser,mode,ispreseason,maxlucky):
                 else :
                     need=need*2
 
+        if mode==5:
+            need*=20
         
         if level == 0 :
             await ctx.send("의문의 물건을 가지고 있지 않습니다.")
@@ -109,12 +111,15 @@ async def doforce(message,reuser,mode,ispreseason,maxlucky):
         if need>moa :
             await ctx.send(f"{need-moa}모아가 부족합니다.")
             break
-
+        
+        
+        
         result=random.random()*100
 
         print(result)
-
-        if result<cri_success :
+        if mode==5:
+            change=1
+        elif result<cri_success :
             print(f"{result}  {cri_success}")
             if FastUp:
                 change=6
