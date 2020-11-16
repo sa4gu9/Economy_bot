@@ -24,10 +24,11 @@ import reinforce
 import financial
 import seasonmanage
 
-bot = commands.Bot(command_prefix='$')
+intents = discord.Intents.all()
+bot = commands.Bot(command_prefix='$',intents=intents)
 
 token=""
-version="V1.1.4"
+version="V1.1.5"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -232,6 +233,8 @@ async def 가입(ctx,nickname=None) :
 
 @bot.command()
 async def 자산(ctx,nickname=None) : 
+    userid=0
+    user=None
     if nickname==None:
         await ctx.send("닉네임을 입력해주세요.")
         return
@@ -242,10 +245,13 @@ async def 자산(ctx,nickname=None) :
         user=line.split(',')
         if user[1].lower()==str(nickname).lower() :
             money=user[3]
+            userid=int(user[2])
+    user=ctx.guild.get_member(userid)
+
     if money==-2000:
         await ctx.send(f"존재하지 않는 유저입니다.")
     else :
-        await ctx.send(f"{nickname}의 자산은 {int(money)}모아입니다.")
+        await ctx.send(f"{nickname}({user.display_name})의 자산은 {int(money)}모아입니다.")
     file.close()
 
 
