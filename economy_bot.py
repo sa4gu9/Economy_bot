@@ -28,12 +28,12 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='$',intents=intents)
 
 token=""
-version="V1.1.4.1"
+version="V1.1.5"
 cancommand=True
 canLotto=True
 getnotice=False
 
-testint=10
+testint=0
 testmode=False
 
 if testint==0:
