@@ -30,7 +30,7 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='$',intents=intents)
 
 token=""
-version="V1.1.6.4"
+version="V1.1.6.5"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -663,13 +663,13 @@ async def 닉네임(ctx):
 @bot.command()
 async def 강화(ctx) : 
     global forceMsg
-    embed=discord.Embed(title="강화",description="36강을 판매하면 시즌3 종료!")
+    embed=discord.Embed(title="강화",description="36강을 판매하면 현재 시즌 종료")
     embed.add_field(name="강화 :hammer:",value="강화를 합니다.")
     embed.add_field(name="판매 :grinning:",value="판매를 합니다.")
     embed.add_field(name="강화x3 :fire:",value="강화를 3번 합니다.")
     embed.add_field(name="파괴방지 강화 :shield:",value="파괴방지 후 강화를 합니다.(비용 1.1배)")
     embed.add_field(name="4렙업 :fast_forward:",value="성공시 4렙, 크리티컬 성공시 6렙을 올립니다.(비용 3배)")
-    embed.add_field(name="확정1업 :star:",value="95% 확률로 업그레이드에 성공합니다. 단,5% 확률로 파괴될 수 있습니다.(비용 10배)")
+    embed.add_field(name="95%로 강화 :star:",value="95% 확률로 업그레이드에 성공합니다. 단,5% 확률로 파괴될 수 있습니다.(비용 10배)")
     msg=await ctx.send(embed=embed,content=ctx.author.display_name)
     forceMsg.append(msg.id)
     emojilist=["🔨","😀","🔥","🛡️","⏩","⭐"]
