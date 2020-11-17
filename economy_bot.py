@@ -30,7 +30,7 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='$',intents=intents)
 
 token=""
-version="V1.1.6"
+version="V1.1.6.1"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -668,7 +668,7 @@ async def 강화(ctx) :
     embed.add_field(name="강화x3 :fire:",value="강화를 3번 합니다.")
     embed.add_field(name="파괴방지 강화 :shield:",value="파괴방지 후 강화를 합니다.(비용 1.1배)")
     embed.add_field(name="4렙업 :fast_forward:",value="성공시 4렙, 크리티컬 성공시 6렙을 올립니다.(비용 3배)")
-    embed.add_field(name="확정1업 :star:",value="100% 확률로 업그레이드에 성공합니다. 단, 크리티컬 성공 확률이 없습니다.(비용 20배)")
+    embed.add_field(name="확정1업 :star:",value="95% 확률로 업그레이드에 성공합니다. 단,5% 확률로 파괴될 수 있습니다.(비용 10배)")
     msg=await ctx.send(embed=embed,content=ctx.author.display_name)
     forceMsg.append(msg.id)
     emojilist=["🔨","😀","🔥","🛡️","⏩","⭐"]
