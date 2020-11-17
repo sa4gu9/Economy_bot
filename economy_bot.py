@@ -30,7 +30,7 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='$',intents=intents)
 
 token=""
-version="V1.1.6.3"
+version="V1.1.6.4"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -183,9 +183,9 @@ async def on_reaction_add(reaction,user) :
                 await doforce(reaction.message,user,1,ispreseason,maxlucky)
                 forceMsg.remove(reaction.message.id)
             elif str(reaction.emoji)=="😀":
-                ispreseason=await sellforce(reaction.message,user)
+                checkpre=await sellforce(reaction.message,user)
                 forceMsg.remove(reaction.message.id)
-                if ispreseason:
+                if checkpre:
                     ispreseason=True
             elif str(reaction.emoji)=="🔥":
                 await doforce(reaction.message,user,3,ispreseason,maxlucky)
