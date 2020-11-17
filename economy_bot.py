@@ -30,7 +30,7 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='$',intents=intents)
 
 token=""
-version="V1.1.6.2"
+version="V1.1.6.3"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -339,7 +339,7 @@ async def 베팅(ctx,mode=None,moa=10000) :
         
         if int(mode)==6 or int(mode)==7:
             if moa==10000:
-                moa=math.floor(money*0.5*(8-int(mode)))
+                moa=math.floor(money*0.5*(int(mode)-5))
             else :
                 await ctx.send("베팅 6,7은 금액 입력을 할 수 없습니다. 6-절반 7-올인")
                 return
@@ -396,7 +396,7 @@ async def 모두(ctx) :
             for userhave in userlist.values():
                 if value<userhave:
                     rank+=1
-            showtext+=f"{key} {value} {'%.5f'%(value/sumMoney[0]*100)}%({rank}위)\n"
+            showtext+=f"{key} {value} {'%.2f'%(value/sumMoney[0]*100)}%({rank}위)\n"
         showtext+="```"
         await ctx.send(showtext)
             
