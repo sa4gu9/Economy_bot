@@ -34,7 +34,7 @@ cancommand=True
 canLotto=True
 getnotice=False
 
-testint=8
+testint=0
 testmode=False
 
 if testint==0:
@@ -373,7 +373,6 @@ async def 모두(ctx) :
         for line in lines :
             user=line.split(',')
             userlist[user[1]]=int(user[3])
-            print(userlist)
 
 
         for key,value in userlist.items():

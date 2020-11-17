@@ -57,8 +57,8 @@ async def setluckypang(price,ctx,maxlucky):
         userfile=open(f"user_info{ctx.guild.id}","r")
         userlines=userfile.readlines()
         userfile.close()
-        for user in userlines:
-            userinfo=user.split(',')
+        for userline in userlines:
+            userinfo=userline.split(',')
             user[userinfo[1]]=int(userinfo[3])
         
 
@@ -66,7 +66,7 @@ async def setluckypang(price,ctx,maxlucky):
         
         #sumMoney=GetSumMoney(ctx)
         while True :
-            nickname=random.choice(user.keys())
+            nickname=random.choice(list(user.keys()))
             #if user[nickname]/sumMoney[0]*100<10:
             break
             
