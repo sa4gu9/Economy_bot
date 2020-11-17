@@ -30,7 +30,7 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='$',intents=intents)
 
 token=""
-version="V1.1.6.1"
+version="V1.1.6.2"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -337,11 +337,9 @@ async def 베팅(ctx,mode=None,moa=10000) :
         if mode==None : 
             raise Exception("모드를 입력해주세요.")
         
-        if moa==10000:
-            if int(mode)==6:
-                moa=math.floor(money*0.5)
-            elif int(mode)==7:
-                moa=money
+        if int(mode)==6 or int(mode)==7:
+            if moa==10000:
+                moa=math.floor(money*0.5*(8-int(mode)))
             else :
                 await ctx.send("베팅 6,7은 금액 입력을 할 수 없습니다. 6-절반 7-올인")
                 return
