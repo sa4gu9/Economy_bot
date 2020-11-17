@@ -6,10 +6,12 @@ from financial import givemoney,setluckypang
 import datareset
 import datetime
 
-version="V1.3"
+version="V1.4"
 
+maxlevel=36
 
 async def doforce(message,reuser,mode,ispreseason,maxlucky,useitem=False):
+    
     NotDestroy=False
     FastUp=False
     count=1
@@ -55,7 +57,7 @@ async def doforce(message,reuser,mode,ispreseason,maxlucky,useitem=False):
         
         need=get_need(level)
 
-        if level>=32:
+        if level>=maxlevel:
             await ctx.send("강화를 완료한 의문의 물건입니다. 판매시 시즌이 종료됩니다.")
             return
         
@@ -65,22 +67,23 @@ async def doforce(message,reuser,mode,ispreseason,maxlucky,useitem=False):
         else :
             cri_success=0.0
 
-        if not ispreseason:
-            if level<15 :
-                destroy=0.0
-            else :
-                destroy=1.41*(level-29)+20
+        if ispreseason:
+            destroy=0.0
         else :
-            if level==1 :
-                destroy=0.0
-            else :
-                destroy=0.37*(level-29)+10
+            destroy=0.8*(level-1)
 
-        success=100-3.18*level
+        success=100-2.57*level
         fail=get_fail(level)
 
         not_change=100 - cri_success - success - fail - destroy
 
+        if mode==5:
+            cri_success=0
+            success=95
+            not_change=0
+            fail=0
+            destroy=100-success
+            need*=10
 
         if NotDestroy:
             if destroy!=0:
@@ -98,12 +101,10 @@ async def doforce(message,reuser,mode,ispreseason,maxlucky,useitem=False):
             else :
                 if not useitem :
                     if ispreseason:
-                        need=math.floor(need*1.3)
+                        need=math.floor(need*2)
                     else :
-                        need=need*2
+                        need*=3
 
-        if mode==5:
-            need*=20
         
         if level == 0 :
             await ctx.send("의문의 물건을 가지고 있지 않습니다.")
@@ -118,9 +119,7 @@ async def doforce(message,reuser,mode,ispreseason,maxlucky,useitem=False):
         result=random.random()*100
 
         print(result)
-        if mode==5:
-            change=1
-        elif result<cri_success :
+        if result<cri_success :
             print(f"{result}  {cri_success}")
             if FastUp:
                 change=6
@@ -226,8 +225,8 @@ async def sellforce(message,reuser) :
 
     givemoney(ctx,nickname,pricesell,1)
 
-    if level>=32:
-        await ctx.send("32강을 완성하여 시즌이 종료되었습니다. 관련 공지가 있을때까지 프리시즌이 유지됩니다.")
+    if level>=maxlevel:
+        await ctx.send(f"{maxlevel}강을 판매되어서 시즌이 종료되었습니다. 관련 공지가 있을때까지 프리시즌이 유지됩니다.")
 
         datareset.datareset(message.guild)
         
@@ -393,4 +392,3 @@ async def buyforce(ctx,level):
 
     except Exception as e :
         await ctx.send(f"{e}\n$강화구매 (레벨)")
-

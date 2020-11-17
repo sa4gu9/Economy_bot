@@ -24,6 +24,7 @@ import reinforce
 import financial
 import seasonmanage
 import time
+import datareset
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='$',intents=intents)
@@ -34,7 +35,7 @@ cancommand=True
 canLotto=True
 getnotice=False
 
-testint=0
+testint=10
 testmode=False
 
 if testint==0:
@@ -214,6 +215,16 @@ async def 가입(ctx,nickname=None) :
     if nickname==None:
         await ctx.send("닉네임을 입력해주세요.")
         return
+    
+    if len(nickname)>10:
+        await ctx.send("10글자를 넘을 수 없습니다.")
+        return
+
+    intfind=re.findall("\d",nickname)
+    if len(intfind)>4:
+        await ctx.send("숫자는 4개까지 넣을수있습니다.")
+        return
+   
     userdiscordid=[]
     nicks=[]
     file=open(f"user_info{ctx.guild.id}","a+")
@@ -233,7 +244,7 @@ async def 가입(ctx,nickname=None) :
     result1=""
     for i in range(20) : 
         result1=result1+random.choice(string_pool)
-    file.write(f"{result1},{nickname},{ctx.author.id},{'%010d'%20000},0,\n")
+    file.write(f"{result1},{nickname},{ctx.author.id},{'%010d'%50000},0,\n")
     await ctx.send("가입 성공!")
     file.close()
 
@@ -264,6 +275,8 @@ async def 자산(ctx,nickname=None) :
 
 
 def get_chance_multiple(mode) :
+    chance=0
+    multiple=0
     if mode==1 : 
         chance=80
         multiple=1.2
@@ -277,11 +290,11 @@ def get_chance_multiple(mode) :
         chance=32
         multiple=3
     elif mode==5 : 
-        chance=16
-        multiple=4
-    elif mode==6 :
         chance=60
         multiple=2
+    elif mode==7 :
+        chance=70
+        multiple=2.3
            
     return chance,multiple
 
@@ -321,16 +334,18 @@ async def 베팅(ctx,mode=None,moa=10000) :
         if mode==None : 
             raise Exception("모드를 입력해주세요.")
         
-        if int(mode)==6 :
-            if moa==10000:
+        if moa==10000:
+            if int(mode)==6:
                 moa=math.floor(money*0.5)
+            elif int(mode)==7:
+                moa=money
             else :
-                await ctx.send("베팅 6은 보유액의 절반만 가능합니다.")
+                await ctx.send("베팅 6,7은 금액 입력을 할 수 없습니다. 6-절반 7-올인")
                 return
 
         if money<int(moa) or int(moa)<0 : 
             raise Exception("보유량보다 많거나 0원 미만으로 베팅하실 수 없습니다.")
-        if int(mode)>6 or int(mode)<1 : 
+        if int(mode)>7 or int(mode)<1 : 
             raise Exception('모드를 잘못 입력했습니다.')
     except Exception as e:
         await ctx.send(f"{e}\n$베팅 (모드) (모아)\n(모드 종류 : 1 80% 1.2배, 2 64% 1.6배, 3 48% 2.2배, 4 32% 3배, 5 16% 4배, 6 60% 2배(올인만 가능)")
@@ -380,7 +395,7 @@ async def 모두(ctx) :
             for userhave in userlist.values():
                 if value<userhave:
                     rank+=1
-            showtext+=f"{key} {value} {'%.3f'%(value/sumMoney[0]*100)}%({rank}위)\n"
+            showtext+=f"{key} {value} {'%.5f'%(value/sumMoney[0]*100)}%({rank}위)\n"
         showtext+="```"
         await ctx.send(showtext)
             
@@ -464,16 +479,16 @@ async def CheckLotto(filename,ctx) :
                         getprice=1000000
                 elif correct==3:
                     place=3
-                    getprice=5000
+                    getprice=100000
                 elif correct==2:
                     place=4
-                    getprice=1000
+                    getprice=20000
 
             userfile=open(f"user_info{ctx.guild.id}","r")
             userdata=userfile.readlines()
             file.close()
             for sub in userdata :
-                cuser=sub.split(',')               
+                cuser=sub.split(',')
                 if submit[5]==cuser[2]:
                     nickname=cuser[1]
                     givemoney(ctx,nickname,getprice)
@@ -504,6 +519,7 @@ async def 복권확인(ctx) :
 async def BuyLotto(ctx,amount,FromBox=False):
     global Lottomax
     global lottoRange
+    lottoPrice=10000
     if ispreseason: 
         lottoRange=8
     else :
@@ -526,11 +542,11 @@ async def BuyLotto(ctx,amount,FromBox=False):
             if user[2]==str(ctx.author.id) :
                 nickname=user[1]
                 if not FromBox:
-                    if int(user[3])<1000:
-                        await ctx.send("복권을 살 돈이 부족합니다.(1000모아)")
+                    if int(user[3])<lottoPrice:
+                        await ctx.send(f"복권을 살 돈이 부족합니다.({lottoPrice}모아)")
                         return
                     else :
-                        givemoney(ctx,nickname,-1000)
+                        givemoney(ctx,nickname,-lottoPrice)
             userid.append(user[2])
         if not str(ctx.author.id) in userid :
             await ctx.send("가입을 해주세요.")
@@ -646,12 +662,12 @@ async def 닉네임(ctx):
 @bot.command()
 async def 강화(ctx) : 
     global forceMsg
-    embed=discord.Embed(title="강화",description="14억을 가지고 있다면 31>32 성공확률 100%")
+    embed=discord.Embed(title="강화",description="36강을 판매하면 시즌3 종료!")
     embed.add_field(name="강화 :hammer:",value="강화를 합니다.")
     embed.add_field(name="판매 :grinning:",value="판매를 합니다.")
     embed.add_field(name="강화x3 :fire:",value="강화를 3번 합니다.")
     embed.add_field(name="파괴방지 강화 :shield:",value="파괴방지 후 강화를 합니다.(비용 1.1배)")
-    embed.add_field(name="4렙업 :fast_forward:",value="성공시 4렙, 크리티컬 성공시 6렙을 올립니다.(비용 2배)")
+    embed.add_field(name="4렙업 :fast_forward:",value="성공시 4렙, 크리티컬 성공시 6렙을 올립니다.(비용 3배)")
     embed.add_field(name="확정1업 :star:",value="100% 확률로 업그레이드에 성공합니다. 단, 크리티컬 성공 확률이 없습니다.(비용 20배)")
     msg=await ctx.send(embed=embed,content=ctx.author.display_name)
     forceMsg.append(msg.id)
@@ -803,7 +819,7 @@ async def BuyBox(message,reuser):
                 userindex=index
             index+=1
         
-        need=6000
+        need=40000
 
         if need>moa :
             await ctx.send(f"{need-moa}모아가 부족합니다.")
@@ -1117,6 +1133,19 @@ async def 운영자지급(ctx,nickname,moa) :
     
 
     await ctx.send(f"{nickname}에게 {moa}모아 지급 완료")
+
+
+@bot.command()
+async def 데이터리셋(ctx,check=-100000) :
+    if ctx.author.id!=382938103435886592:
+        await ctx.send("권한이 없습니다.")
+        return
+
+
+    if check==GetSumMoney(ctx)[0]:
+        datareset.datareset(ctx.guild)
+    else :
+        await ctx.send("총 경제규모를 입력해주세요.")
 
 
 print(f"testmode : {testmode}")
