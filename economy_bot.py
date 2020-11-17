@@ -35,7 +35,7 @@ cancommand=True
 canLotto=True
 getnotice=False
 
-testint=10
+testint=0
 testmode=False
 
 if testint==0:
