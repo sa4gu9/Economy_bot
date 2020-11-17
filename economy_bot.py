@@ -19,7 +19,7 @@ import shutil
 import sys
 import glob
 from reinforce import doforce,sellforce,buyforce
-from financial import givemoney,setluckypang
+from financial import givemoney,setluckypang,GetSumMoney
 import reinforce
 import financial
 import seasonmanage
@@ -29,12 +29,12 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='$',intents=intents)
 
 token=""
-version="V1.1.5.2"
+version="V1.1.5.3"
 cancommand=True
 canLotto=True
 getnotice=False
 
-testint=0
+testint=8
 testmode=False
 
 if testint==0:
@@ -363,6 +363,7 @@ async def 베팅(ctx,mode=None,moa=10000) :
 @bot.command()
 async def 모두(ctx) :
     try :
+        sumMoney=GetSumMoney(ctx)
         file=open(f"user_info{ctx.guild.id}","r")
         lines=file.readlines()
         file.close()
@@ -380,7 +381,7 @@ async def 모두(ctx) :
             for userhave in userlist.values():
                 if value<userhave:
                     rank+=1
-            showtext+=f"{key} {value} {rank}위\n"
+            showtext+=f"{key} {value} {'%.3f'%(value/sumMoney[0]*100)}%({rank}위)\n"
         showtext+="```"
         await ctx.send(showtext)
             
@@ -617,32 +618,18 @@ async def 기부(ctx,nickname=None,moa=None) :
 @commands.cooldown(1, 2, commands.BucketType.default)
 @bot.command()
 async def 도움말(ctx,keyword=None) :
-    if keyword==None:
-        await ctx.send("도움말 (명령어) : 가입, 자산, 베팅, 기부, 복권, 강화")
-    elif keyword=="베팅":
-        await ctx.send("$베팅 (모드) (돈)\n모드 종류 : 1 80% 1.4배, 2 64% 1.8배, 3 48% 2.2배, 4 32% 2.6배, 5 16% 3배, 6 60% 2배(올인만 가능)")
-    elif keyword=="자산":
-        await ctx.send("$자산 (닉네임)")
-    elif keyword=="복권":
-        await ctx.send("$복권 (구매개수 - 기본값 : 1)")
-    else :
-        await ctx.send("현재 도움말은 베팅,자산, 복권만 지원합니다.")
+    await ctx.send("https://www.notion.so/7843d4b09b0d4854ba977b8e0ba682eb")
 
 @commands.cooldown(1, 2, commands.BucketType.default)
 @bot.command()
 async def 경제규모(ctx,mode=None,moa=None) :
-    sum_money=0
-    file=open(f"user_info{ctx.guild.id}","r")
-    lines=file.readlines()
-    file.close()
-    countUser=0
-    for line in lines :
-        user=line.split(',')
-        sum_money+=int(user[3])
-        countUser+=1
-
+    sum_money,countUser=GetSumMoney(ctx)
+    
     sendtext=f"총 경제규모 : {sum_money}모아\n1인당 경제규모 : {'%.3f'%(sum_money/countUser)}모아"
     await ctx.send(sendtext)
+
+
+
 
 @bot.command()
 async def 닉네임(ctx):
@@ -874,7 +861,12 @@ async def CheckItem(message,reuser):
     file=open(f"forceitem{reuser.id}","r")
     file_text=file.read()
     file.close()
-    await message.channel.send('```'+file_text+'```')
+    writetext="```"
+    writetext+=file_text
+    writetext+="```"
+    if writetext=="``````":
+        writetext="보유중인 아이템이 없습니다."
+    await message.channel.send(writetext)
 
 
 @commands.cooldown(1, 2, commands.BucketType.default)
@@ -1133,5 +1125,5 @@ print(f"testmode : {testmode}")
 print(f"testmode : {testmode}")
 
 
-time.sleep(10)
+time.sleep(5)
 bot.run(token)
