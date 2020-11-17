@@ -292,6 +292,9 @@ def get_chance_multiple(mode) :
     elif mode==5 : 
         chance=60
         multiple=2
+    elif mode==6:
+        chance=60
+        multiple=2
     elif mode==7 :
         chance=70
         multiple=2.3
