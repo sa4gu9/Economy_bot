@@ -19,7 +19,7 @@ import shutil
 import sys
 import glob
 from reinforce import doforce,sellforce,buyforce
-from financial import givemoney,setluckypang,GetSumMoney
+from financial import givemoney,setluckypang,GetSumMoney,GetLuckypang
 import reinforce
 import financial
 import seasonmanage
@@ -30,7 +30,7 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='$',intents=intents)
 
 token=""
-version="V1.1.6.5"
+version="V1.1.6.6"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -45,7 +45,7 @@ else :
 
 Lottocool=0
 Lottomax=3
-
+maxlucky=0
 forceMsg=[]
 boxMsg=[]
 
@@ -296,8 +296,8 @@ def get_chance_multiple(mode) :
         chance=60
         multiple=2
     elif mode==7 :
-        chance=70
-        multiple=2.3
+        chance=50
+        multiple=3
            
     return chance,multiple
 
@@ -1134,6 +1134,13 @@ async def 운영자지급(ctx,nickname,moa) :
     
 
     await ctx.send(f"{nickname}에게 {moa}모아 지급 완료")
+
+
+@bot.command()
+async def 럭키팡(ctx) :
+    global maxlucky
+    await GetLuckypang(ctx,maxlucky)
+
 
 
 @bot.command()

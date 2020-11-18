@@ -2,7 +2,7 @@ import asyncio
 import random
 import discord
 
-version="V1.4"
+version="V1.5"
 
 
 def givemoney(ctx,nickname,moa,mode=None,getlevel=None):
@@ -42,7 +42,6 @@ def givemoney(ctx,nickname,moa,mode=None,getlevel=None):
 
 
 async def setluckypang(price,ctx,maxlucky):
-
     file=open("luckypang","r")
     stack=int(file.read())
     file.close()
@@ -65,8 +64,9 @@ async def setluckypang(price,ctx,maxlucky):
         
         sumMoney=GetSumMoney(ctx)
         while True :
-            nickname=random.choice(list(user.keys()))
-            if user[nickname]/sumMoney[0]*100<70:
+            usernicks=list(user.keys())
+            nickname=random.choice(usernicks)
+            if user[nickname]/sumMoney[0]*100<70 or len(usernicks)==1:
                 break
             
         givemoney(ctx,nickname,stack+price)
@@ -80,6 +80,14 @@ async def setluckypang(price,ctx,maxlucky):
         editfile=open(f"luckypang","w")
         editfile.write(str(stack+price))
         editfile.close()
+
+async def GetLuckypang(ctx,maxlucky) :
+    file=open("luckypang","r")
+    stack=int(file.read())
+    file.close()
+
+    
+    await ctx.send(f"{stack}/{maxlucky}  {'%.3f'%(stack/maxlucky*100)}%")
 
 
 def GetBeggingMoa():
