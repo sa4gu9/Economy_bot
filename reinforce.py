@@ -3,8 +3,8 @@ import math
 import random
 import discord
 from financial import givemoney,setluckypang
-import datareset
 import datetime
+import datamanage
 
 version="V1.4"
 
@@ -228,7 +228,7 @@ async def sellforce(message,reuser) :
     if level>=maxlevel:
         await ctx.send(f"{maxlevel}강을 판매되어서 시즌이 종료되었습니다. 관련 공지가 있을때까지 프리시즌이 유지됩니다.")
 
-        datareset.datareset(message.guild)
+        datamanage.datareset(message.guild)
         
         return True
 

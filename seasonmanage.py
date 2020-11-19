@@ -1,6 +1,6 @@
-def seasoncheck():
-    seasonfile=open("ispreseason","r")
-    seasoncheck=seasonfile.read().split(',')
-    seasonfile.close()
-
-    return seasoncheck
+import json
+def seasoncheck(): 
+    season=None
+    with open("seasoninfo.json","r") as seasonfile:
+        season=json.load(seasonfile)
+    return season

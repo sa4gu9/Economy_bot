@@ -24,13 +24,16 @@ import reinforce
 import financial
 import seasonmanage
 import time
-import datareset
+import datamanage
+import json
+import datarecord
+
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='$',intents=intents)
 
 token=""
-version="V1.1.6.6"
+version="V1.1.7"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -71,22 +74,17 @@ getPercent={"복권 1개":35,"복권 3개":26,"복권 5개":16,"복권 7개":10,
 
 seasoncheck=seasonmanage.seasoncheck()
 ispreseason=False
-if seasoncheck[0]=="false":
-    print(f"is not preseason current season is 'season{seasoncheck[1]}'")
+ispreseason=seasoncheck['ispreseason']
+
+
+if not ispreseason:
+    print(f"season{seasoncheck['currentseason']}")
     ispreseason=False
-elif seasoncheck[0]=="true" :
-    print("is preseason")
-    ispreseason=True
 else :
-    print("error")
-    sys.exit()
+    print(f"preseason{seasoncheck['currentseason']}-{seasoncheck['resetcount']}")
+    ispreseason=True
 
 lottoRange=0
-
-    
-
-
-
 
 @bot.event
 async def on_message(tempmessage) :
@@ -126,13 +124,17 @@ async def on_ready():
     bot.loop.create_task(job())
 
 async def job() :
-    channel=bot.get_channel(771203131836989443)
+    if testmode:
+        channel=bot.get_channel(709647685417697372)
+    else :
+        channel=bot.get_channel(771203131836989443)
     while True:
-        currentTime=str(datetime.datetime.now().time())[0:8]
-        print(currentTime[0:5])
-        print(currentTime[3:5])#분
-        print(currentTime[6:8])#초
-        if currentTime[0:5]=="01:00" and ( int(currentTime[6:8]) >=0 and int(currentTime[6:8]) <10):
+        currentTime=datetime.datetime.now()
+        hour=currentTime.hour
+        minute=currentTime.minute
+        second=currentTime.second
+        
+        if hour==1 and second>=0 and second<10 and minute==0:
             file=open("forcestore","r")
             file_text=file.read()
             file.seek(0)
@@ -149,6 +151,9 @@ async def job() :
                 file.write(file_text)
                 file.close()
                 await channel.send("의문의 물건 +1의 남은 개수가 100개가 되었습니다.")
+        elif hour%12==4 :#and currentTime.second()>=30 and currentTime.second()<40 :#and currentTime.minute()==19:
+            datarecord.RecordData(channel,seasoncheck,testmode)
+            await channel.send("통계가 작성되었습니다.")
 
         await asyncio.sleep(10)
 
@@ -185,8 +190,9 @@ async def on_reaction_add(reaction,user) :
             elif str(reaction.emoji)=="😀":
                 checkpre=await sellforce(reaction.message,user)
                 forceMsg.remove(reaction.message.id)
+
                 if checkpre:
-                    ispreseason=True
+                    SeasonChange(checkpre)
             elif str(reaction.emoji)=="🔥":
                 await doforce(reaction.message,user,3,ispreseason,maxlucky)
                 forceMsg.remove(reaction.message.id)
@@ -212,6 +218,8 @@ async def on_reaction_add(reaction,user) :
 @commands.cooldown(1, 2, commands.BucketType.default)
 @bot.command()
 async def 가입(ctx,nickname=None) : 
+    
+    blacklist=['씨발','꺼져','북딱','똥꼬','노딱','뚱땡']
     if nickname==None:
         await ctx.send("닉네임을 입력해주세요.")
         return
@@ -224,6 +232,11 @@ async def 가입(ctx,nickname=None) :
     if len(intfind)>4:
         await ctx.send("숫자는 4개까지 넣을수있습니다.")
         return
+
+    for blackword in blacklist :
+        if blackword in nickname :
+            await ctx.send("사용할수 없는 단어가 포함되어 있습니다.")
+            return
    
     userdiscordid=[]
     nicks=[]
@@ -245,8 +258,9 @@ async def 가입(ctx,nickname=None) :
     for i in range(20) : 
         result1=result1+random.choice(string_pool)
     file.write(f"{result1},{nickname},{ctx.author.id},{'%010d'%50000},0,\n")
-    await ctx.send("가입 성공!")
     file.close()
+    datarecord.AddNickname(seasoncheck,testmode,nickname)
+    await ctx.send("가입 성공!")
 
 
 @bot.command()
@@ -1144,22 +1158,47 @@ async def 럭키팡(ctx) :
 
 
 @bot.command()
-async def 데이터리셋(ctx,check=-100000) :
+async def 데이터리셋(ctx,seasoncheck,check=-7000) :
+    checkpreseason=None
     if ctx.author.id!=382938103435886592:
         await ctx.send("권한이 없습니다.")
         return
 
-
+    if seasoncheck=="preseason":
+        checkpreseason=True
+    elif seasoncheck=="regularseason":
+        checkpreseason=False
+    else :
+        await ctx.send("preseason 또는 regularseason으로 입력해주세요.")
+        return
+        
     if check==GetSumMoney(ctx)[0]:
-        datareset.datareset(ctx.guild)
+        datamanage.datareset(ctx.guild)
+        SeasonChange(checkpreseason)
     else :
         await ctx.send("총 경제규모를 입력해주세요.")
 
+def SeasonChange(check):
+    if seasoncheck['ispreseason'] :
+        if check:
+            seasoncheck['resetcount']+=1
+        else :
+            seasoncheck['currentseason']+=1
+            seasoncheck['resetcount']=1
+    else :
+        seasoncheck['resetcount']=1
+
+    seasoncheck['ispreseason'] = check
+
+    datarecord.createsheet(seasoncheck,testmode)
+
+
+    with open("seasoninfo.json","w") as seasonfile:
+        json.dump(seasoncheck,seasonfile)
 
 print(f"testmode : {testmode}")
 print(f"testmode : {testmode}")
 print(f"testmode : {testmode}")
-
 
 time.sleep(5)
 bot.run(token)

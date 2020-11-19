@@ -29,9 +29,4 @@ def datareset(ctx):
             os.remove(filePath)
         except:
             print("Error while deleting file : ", filePath)
-
-    #프리시즌 전환
-    prefile=open("ispreseason","w")
-    prefile.write("true,preseason")
-    prefile.close()
     return

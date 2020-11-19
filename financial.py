@@ -2,7 +2,7 @@ import asyncio
 import random
 import discord
 
-version="V1.5"
+version="V1.6"
 
 
 def givemoney(ctx,nickname,moa,mode=None,getlevel=None):
@@ -66,7 +66,9 @@ async def setluckypang(price,ctx,maxlucky):
         while True :
             usernicks=list(user.keys())
             nickname=random.choice(usernicks)
-            if user[nickname]/sumMoney[0]*100<70 or len(usernicks)==1:
+            if user[nickname]/sumMoney[0]*100<30 and len(usernicks)>=4:
+                break
+            if user[nickname]/sumMoney[0]*100<55 or len(usernicks)==1:
                 break
             
         givemoney(ctx,nickname,stack+price)
