@@ -33,7 +33,7 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='$',intents=intents)
 
 token=""
-version="V1.1.7"
+version="V1.1.7.1"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -151,7 +151,7 @@ async def job() :
                 file.write(file_text)
                 file.close()
                 await channel.send("의문의 물건 +1의 남은 개수가 100개가 되었습니다.")
-        elif hour%12==3 and second>=0 and second<10 and minute==0:
+        elif (hour%12==3 or hour%12==9) and second>=0 and second<10 and minute==0:
             datarecord.RecordData(channel,seasoncheck,testmode)
             await channel.send("통계가 작성되었습니다.")
 
@@ -323,9 +323,9 @@ async def 버전(ctx) :
 @bot.command()
 async def 시즌(ctx) :
     if not ispreseason:
-        await ctx.send(f"season{seasoncheck[1]}")
+        await ctx.send(f"season{seasoncheck['currentseason']}")
     else :
-        await ctx.send(f"preseason")
+        await ctx.send(f"preseason{seasoncheck['currentseason']}-{seasoncheck['resetcount']}")
 
 
 @commands.cooldown(1, 2, commands.BucketType.default)
