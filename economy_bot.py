@@ -151,7 +151,7 @@ async def job() :
                 file.write(file_text)
                 file.close()
                 await channel.send("의문의 물건 +1의 남은 개수가 100개가 되었습니다.")
-        elif hour%12==4 :#and currentTime.second()>=30 and currentTime.second()<40 :#and currentTime.minute()==19:
+        elif hour%12==3 and second>=0 and second<10 and minute==0:
             datarecord.RecordData(channel,seasoncheck,testmode)
             await channel.send("통계가 작성되었습니다.")
 
