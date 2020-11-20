@@ -39,7 +39,7 @@ def AddNickname(seasoncheck,testmode,nickname):
     sheet.append_row([nickname])
 
 def RecordData(ctx,seasoncheck,testmode):
-    file=open(f"user_info{ctx.guild.id}","r")
+    file=open(f"data/user_info{ctx.guild.id}","r")
     lines=file.readlines()
     file.close()
     userlist={}
@@ -66,7 +66,7 @@ def RecordData(ctx,seasoncheck,testmode):
     hour=nowtime.hour
     minute=nowtime.minute
 
-    timestring=f"{year}-{month}-{day} {hour}:{minute}"
+    timestring=f"{year}-{month}-{day} {hour}:{'%02d'%minute}"
     
     sheet.update_acell(f"{chr(65+sheet.col_count)}1",timestring)
 

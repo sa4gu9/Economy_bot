@@ -3,10 +3,10 @@ import random
 import discord
 
 version="V1.6"
-
+path="data/"
 
 def givemoney(ctx,nickname,moa,mode=None,getlevel=None):
-    file=open(f"user_info{ctx.guild.id}","r")
+    file=open(f"data/user_info{ctx.guild.id}","r")
     lines=file.readlines()
     file.close()
     nicknames=[]
@@ -36,13 +36,13 @@ def givemoney(ctx,nickname,moa,mode=None,getlevel=None):
     if not nickname.lower() in nicknames:
         return 0
 
-    with open(f"user_info{ctx.guild.id}","w") as f:
+    with open(f"{path}user_info{ctx.guild.id}","w") as f:
         f.write(writetext)
 
 
 
 async def setluckypang(price,ctx,maxlucky):
-    file=open("luckypang","r")
+    file=open("data/luckypang","r")
     stack=int(file.read())
     file.close()
 
@@ -52,7 +52,7 @@ async def setluckypang(price,ctx,maxlucky):
     if stack+price>=maxlucky:
         user={}
 
-        userfile=open(f"user_info{ctx.guild.id}","r")
+        userfile=open(f"{path}user_info{ctx.guild.id}","r")
         userlines=userfile.readlines()
         userfile.close()
         for userline in userlines:
@@ -73,18 +73,18 @@ async def setluckypang(price,ctx,maxlucky):
             
         givemoney(ctx,nickname,stack+price)
 
-        file=open("luckypang","w")
+        file=open(f"{path}luckypang","w")
         file.write("0")
         file.close()
 
         await ctx.send(f"{nickname} 럭키팡 당첨! {stack+price}모아 지급!")
     else :
-        editfile=open(f"luckypang","w")
+        editfile=open(f"{path}luckypang","w")
         editfile.write(str(stack+price))
         editfile.close()
 
 async def GetLuckypang(ctx,maxlucky) :
-    file=open("luckypang","r")
+    file=open(f"{path}luckypang","r")
     stack=int(file.read())
     file.close()
 
@@ -117,7 +117,7 @@ def GetBeggingMoa():
 def GetSumMoney(ctx):
     sum_money=0
     countUser=0
-    file=open(f"user_info{ctx.guild.id}","r")
+    file=open(f"{path}user_info{ctx.guild.id}","r")
     lines=file.readlines()
     file.close()
 

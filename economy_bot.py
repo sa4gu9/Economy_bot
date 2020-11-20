@@ -28,12 +28,12 @@ import datamanage
 import json
 import datarecord
 
-
+datapath="data/"
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='$',intents=intents)
 
 token=""
-version="V1.1.7.1"
+version="V1.1.7.2"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -134,24 +134,21 @@ async def job() :
         minute=currentTime.minute
         second=currentTime.second
         
-        if hour==1 and second>=0 and second<10 and minute==0:
-            file=open("forcestore","r")
-            file_text=file.read()
-            file.seek(0)
-            fileLines=file.readlines()
-            file.close()
+        if (hour==1 and second>=0 and second<10 and minute==0):
+            forceSale={}
+            with open("data/forcestore.json","r") as forceFile:
+                forceSale=json.load(forceFile)
 
 
-            info1=fileLines[0]
-            information=info1.split(',')
-
-            if int(information[1])<100:
-                file_text=file_text.replace(f"1,{information[1]}","1,100")
-                file=open("forcestore","w")
-                file.write(file_text)
-                file.close()
+            if forceSale["1"]<100 :
+                forceSale["1"]=100
+                with open(f"{datapath}forcestore.json","w") as forceFile:
+                    json.dump(forceSale,forceFile)
                 await channel.send("의문의 물건 +1의 남은 개수가 100개가 되었습니다.")
-        elif (hour%12==3 or hour%12==9) and second>=0 and second<10 and minute==0:
+
+
+            
+        elif ((hour%12==3 or hour%12==9) and second>=0 and second<10 and minute==0) or testmode:
             datarecord.RecordData(channel,seasoncheck,testmode)
             await channel.send("통계가 작성되었습니다.")
 
@@ -240,7 +237,7 @@ async def 가입(ctx,nickname=None) :
    
     userdiscordid=[]
     nicks=[]
-    file=open(f"user_info{ctx.guild.id}","a+")
+    file=open(f"{datapath}user_info{ctx.guild.id}","a+")
     file.seek(0)
     lines=file.readlines()
     for line in lines:
@@ -270,7 +267,7 @@ async def 자산(ctx,nickname=None) :
     if nickname==None:
         await ctx.send("닉네임을 입력해주세요.")
         return
-    file=open(f"user_info{ctx.guild.id}","r")
+    file=open(f"{datapath}user_info{ctx.guild.id}","r")
     lines=file.readlines()
     money=-2000
     for line in lines :
@@ -335,7 +332,7 @@ async def 베팅(ctx,mode=None,moa=10000) :
     try :
         bonusback=0
         success=True
-        file=open(f"user_info{ctx.guild.id}","r")
+        file=open(f"{datapath}user_info{ctx.guild.id}","r")
         lines=file.readlines()
         money=0
         nickname=""
@@ -394,7 +391,7 @@ async def 베팅(ctx,mode=None,moa=10000) :
 async def 모두(ctx) :
     try :
         sumMoney=GetSumMoney(ctx)
-        file=open(f"user_info{ctx.guild.id}","r")
+        file=open(f"{datapath}user_info{ctx.guild.id}","r")
         lines=file.readlines()
         file.close()
         userlist={}
@@ -499,7 +496,7 @@ async def CheckLotto(filename,ctx) :
                     place=4
                     getprice=20000
 
-            userfile=open(f"user_info{ctx.guild.id}","r")
+            userfile=open(f"data/user_info{ctx.guild.id}","r")
             userdata=userfile.readlines()
             file.close()
             for sub in userdata :
@@ -541,7 +538,7 @@ async def BuyLotto(ctx,amount,FromBox=False):
         lottoRange=10
     showtext="```"
     nickname=""
-    filename=f"user_info{ctx.guild.id}"
+    filename=f"{datapath}user_info{ctx.guild.id}"
     if int(amount)>Lottomax and not FromBox:
         await ctx.send(f"한번에 {Lottomax}개까지 구매 가능합니다.")
         return
@@ -605,8 +602,7 @@ async def 기부(ctx,nickname=None,moa=None) :
         givenickname=""
         receivenickname=str(nickname).lower()
 
-
-        file=open(f"user_info{ctx.guild.id}","r")
+        file=open(f"data/user_info{ctx.guild.id}","r")
         file.seek(0)
         lines=file.readlines()
         file.close()
@@ -728,9 +724,7 @@ async def 한강(ctx) :
 @commands.cooldown(1, giveMcool, commands.BucketType.user)
 @bot.command()
 async def 구걸(ctx) :
-    file=open(f"user_info{ctx.guild.id}","r")
-    file_text=file.read()
-    file.seek(0)
+    file=open(f"data/user_info{ctx.guild.id}","r")
     lines=file.readlines()
     file.close()
     userid=[]

@@ -5,8 +5,9 @@ import discord
 from financial import givemoney,setluckypang
 import datetime
 import datamanage
+import json
 
-version="V1.4"
+version="V1.5"
 
 maxlevel=36
 
@@ -40,7 +41,7 @@ async def doforce(message,reuser,mode,ispreseason,maxlucky,useitem=False):
     #region 반복 구간 시작
 
     for i in range(count):
-        file=open(f"user_info{message.guild.id}","r")
+        file=open(f"data/user_info{message.guild.id}","r")
         file_text=file.read()
         file.seek(0)
         lines=file.readlines()
@@ -153,7 +154,7 @@ async def doforce(message,reuser,mode,ispreseason,maxlucky,useitem=False):
             file_text=file_text.replace(f"{reuser.id},{'%010d'%moa},{level}",f"{reuser.id},{'%010d'%(moa-need)},0")
             await ctx.send(f"{nickname}, 의문의 물건 +{level} 파괴...")
         
-        file=open(f"user_info{ctx.guild.id}","w")
+        file=open(f"data/user_info{ctx.guild.id}","w")
         file.write(file_text)
         file.close()
 
@@ -203,7 +204,7 @@ async def sellforce(message,reuser) :
     ctx=message.channel
     level=0
 
-    file=open(f"user_info{message.guild.id}","r")
+    file=open(f"data/user_info{message.guild.id}","r")
     file.seek(0)
     lines=file.readlines()
     file.close()
@@ -232,27 +233,26 @@ async def sellforce(message,reuser) :
         
         return True
 
-    file=open("forcestore","r")
-    fileline=file.readlines()
-    file.seek(0)
-    filetext=file.read()
-    file.close()
+    forceSale={}
+    with open("data/forcestore.json","r") as forceFile :
+        forceSale=json.load(forceFile)
 
-    for line in fileline : 
-        data=line.split(',')
-        if data[0]==str(level):
-            filetext=filetext.replace(f"{data[0]},{data[1]}",f"{data[0]},{int(data[1])+1}")
-
-
-    file=open("forcestore","w")
-    file.write(filetext)
-    file.close()
-
-    file.close()
     
+
+    if f"{level}" in forceSale.keys():
+        forceSale[f"{level}"]+=1
+    else :
+        forceSale[f"{level}"]=1
+
+
+    with open("data/forcestore.json","w") as forceFile :
+        json.dump(forceSale,forceFile)
+
+
     await ctx.send(f"의문의 물건 +{level}이 판매되었습니다.")
 
 def get_price(level) :
+    level=int(level)
     temp=[0,0,0,0]
     temp_buy=0
     temp_sell=0
@@ -280,6 +280,12 @@ def get_price(level) :
 
 async def buyforce(ctx,level):
     try :
+        forceSale={}
+        with open("data/forcestore.json","r") as forceFile:
+            forceSale=json.load(forceFile)
+
+
+        
         sale=False
         chour=datetime.datetime.now().time().hour
         if (datetime.datetime.now().weekday()==5 or datetime.datetime.now().weekday()==6) and (chour==13 or chour==21 or chour==17):
@@ -290,46 +296,21 @@ async def buyforce(ctx,level):
         nickname=""
         showtext="```"
 
-        forcefile=open("forcestore","r")
-        forcelines=forcefile.readlines()
-        forcefile.seek(0)
-        forcefile_text=forcefile.read()
-        forcefile.close()
-        mylevel=0
-
-        userfile=open(f"user_info{ctx.guild.id}","r")
+        userfile=open(f"data/user_info{ctx.guild.id}","r")
         userlines=userfile.readlines()
         userfile.close()
-
-        remainlist=[]
-
-        i=0
-        while i<31 :
-            data=forcelines[i].split(',')
-            print(data)
-            remainlist.append(int(data[1]))
-            i+=1
-        print(remainlist)
         
-
-
         if level==None:
             if sale:
-                showtext+="의문의 물건 +15이상 30% 할인중!\n"
-            i=1
-            while i<32 :
-                if remainlist[i-1]>0 :
-                    if i>=15 and sale :
-                        showtext+=f"의문의 물건 +{i}, {remainlist[i-1]}개 남음,{math.floor(get_price(i)[0]*0.7)}모아\n"
-                    else :
-                        showtext+=f"의문의 물건 +{i}, {remainlist[i-1]}개 남음,{get_price(i)[0]}모아\n"
-                i+=1
+                showtext+="의문의 물건 +15이상 20% 할인중!\n"
+            for key,value in list(sorted(forceSale.items())):
+                showtext+=f"의문의 물건 +{key}, {value}개 남음, {get_price(key)[0]}모아\n"
             showtext+='```'
             await ctx.send(showtext)
             return
 
-        level=int(level)
-        
+        limit=forceSale.get(level)
+
 
         for line in userlines :
             user=line.split(',')
@@ -346,19 +327,17 @@ async def buyforce(ctx,level):
             await ctx.send("의문의 물건은 1개만 보유할수 있습니다.")
             return
         
-        if remainlist[level-1]<=0:
+        if limit<=0:
             await ctx.send(f"의문의 물건 +{level}의 매물이 없습니다.")
             return
         price=0
-        if i>=15 and sale :
-            price=math.floor(get_price(level)[0]*0.7)
+        if int(level)>=15 and sale :
+            price=math.floor(get_price(level)[0]*0.8)
         else :
             price=get_price(level)[0]
 
         print(price)
 
-
-        
 
         for user in userlines :
             userdata=user.split(',')
@@ -370,20 +349,10 @@ async def buyforce(ctx,level):
                     await ctx.send(f"{price-int(userdata[3])}모아가 부족합니다.")
                     return
         
-        forcefile_text.replace(f"{level},{remainlist[level-1]}",f"{level},{remainlist[level-1]-1}")
+        forceSale[level]-=1
 
-        
-        writetext=""
-        i=0
-        while i<31 :
-            if i+1==level:
-                writetext+=f"{i+1},{remainlist[i]-1},\n"
-            else :
-                writetext+=f"{i+1},{remainlist[i]},\n"
-            i+=1
-        file=open(f"forcestore","w")
-        file.write(writetext)
-        file.close()
+        with open("data/forcestore.json","w") as forceFile:
+            json.dump(forceSale,forceFile)
 
         await ctx.send(f"{nickname}, 의문의 물건 +{level} 구매 성공")
 
