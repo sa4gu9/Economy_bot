@@ -13,8 +13,8 @@ def datareset(ctx):
     os.remove(f"data/user_info{ctx.id}")
 
     #거래시장 매물 삭제
-    if os.path.isfile("data/trade.csv"):
-        os.remove(f"data/trade.csv")
+    if os.path.isfile("trade.csv"):
+        os.remove(f"trade.csv")
 
     #복권보유정보 삭제
     if os.path.isfile(f"lotto_{ctx.id}"):

@@ -33,7 +33,7 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='$',intents=intents)
 
 token=""
-version="V1.1.7.2"
+version="V1.1.7.3"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -148,7 +148,7 @@ async def job() :
 
 
             
-        elif ((hour%12==3 or hour%12==9) and second>=0 and second<10 and minute==0) or testmode:
+        elif ((hour%12==3 or hour%12==9) and second>=0 and second<10 and minute==0):
             datarecord.RecordData(channel,seasoncheck,testmode)
             await channel.send("통계가 작성되었습니다.")
 
@@ -671,23 +671,40 @@ async def 닉네임(ctx):
 
 
 @bot.command()
-async def 강화(ctx) : 
-    global forceMsg
-    embed=discord.Embed(title="강화",description="36강을 판매하면 현재 시즌 종료")
-    embed.add_field(name="강화 :hammer:",value="강화를 합니다.")
-    embed.add_field(name="판매 :grinning:",value="판매를 합니다.")
-    embed.add_field(name="강화x3 :fire:",value="강화를 3번 합니다.")
-    embed.add_field(name="파괴방지 강화 :shield:",value="파괴방지 후 강화를 합니다.(비용 1.1배)")
-    embed.add_field(name="4렙업 :fast_forward:",value="성공시 4렙, 크리티컬 성공시 6렙을 올립니다.(비용 3배)")
-    embed.add_field(name="95%로 강화 :star:",value="95% 확률로 업그레이드에 성공합니다. 단,5% 확률로 파괴될 수 있습니다.(비용 10배)")
-    msg=await ctx.send(embed=embed,content=ctx.author.display_name)
-    forceMsg.append(msg.id)
-    emojilist=["🔨","😀","🔥","🛡️","⏩","⭐"]
-    for emoji in emojilist :
-        if msg:
-            await msg.add_reaction(emoji)
+async def 강화(ctx,level=None) : 
+    try :
+        if not level:
+            global forceMsg
+            embed=discord.Embed(title="강화",description="36강을 판매하면 현재 시즌 종료")
+            embed.add_field(name="강화 :hammer:",value="강화를 합니다.")
+            embed.add_field(name="판매 :grinning:",value="판매를 합니다.")
+            embed.add_field(name="강화x3 :fire:",value="강화를 3번 합니다.")
+            embed.add_field(name="파괴방지 강화 :shield:",value="파괴방지 후 강화를 합니다.(비용 1.1배)")
+            embed.add_field(name="4렙업 :fast_forward:",value="성공시 4렙, 크리티컬 성공시 6렙을 올립니다.(비용 3배)")
+            embed.add_field(name="95%로 강화 :star:",value="95% 확률로 업그레이드에 성공합니다. 단,5% 확률로 파괴될 수 있습니다.(비용 10배)")
+            msg=await ctx.send(embed=embed,content=ctx.author.display_name)
+            forceMsg.append(msg.id)
+            emojilist=["🔨","😀","🔥","🛡️","⏩","⭐"]
+            for emoji in emojilist :
+                if msg:
+                    await msg.add_reaction(emoji)
+            return
+        else : 
+            level=int(level)
+            if level<1 or level>35 :
+                await ctx.send("1~35강 확률을 볼 수 있습니다.")
+            else :
+                rein=reinforce
+                need=rein.get_need(level)
+                fail=rein.get_fail(level)
+                destroy=rein.GetDestroy(level,ispreseason)
+                success=rein.GetSuccess(level)
+                criSuccess=rein.GetCriSuccess(level)
+                notChange=100-fail-destroy-success-criSuccess
+                await ctx.send(f"크리티컬 성공 확률 : {'%.2f'%criSuccess}%\n성공 확률 : {'%.2f'%success}%\n유지 확률 : {'%.2f'%notChange}%\n단계 하락 확률 : {'%.2f'%fail}%\n파괴 확률 : {'%.2f'%destroy}%\n비용 : {need}모아")
 
-    return
+    except Exception as e :
+        await ctx.send(e)
 
 
 
@@ -1148,8 +1165,6 @@ async def 운영자지급(ctx,nickname,moa) :
 async def 럭키팡(ctx) :
     global maxlucky
     await GetLuckypang(ctx,maxlucky)
-
-
 
 @bot.command()
 async def 데이터리셋(ctx,seasoncheck,check=-7000) :

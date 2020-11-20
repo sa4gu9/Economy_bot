@@ -7,7 +7,7 @@ import datetime
 import datamanage
 import json
 
-version="V1.5"
+version="V1.6"
 
 maxlevel=36
 
@@ -63,17 +63,15 @@ async def doforce(message,reuser,mode,ispreseason,maxlucky,useitem=False):
             return
         
 
-        if level <=29 :
-            cri_success=0.05*(30-level)
-        else :
-            cri_success=0.0
 
-        if ispreseason:
-            destroy=0.0
-        else :
-            destroy=0.8*(level-1)
+        cri_success=GetCriSuccess(level)
+        
 
-        success=100-2.57*level
+        destroy=GetDestroy(level,ispreseason)
+
+        
+
+        success=GetSuccess(level)
         fail=get_fail(level)
 
         not_change=100 - cri_success - success - fail - destroy
@@ -164,6 +162,24 @@ async def doforce(message,reuser,mode,ispreseason,maxlucky,useitem=False):
     #endregion
     if totalfailneed!=0:
         await setluckypang(math.floor(totalfailneed*0.1),message.channel,maxlucky)
+
+def GetSuccess(level):
+    return 100-2.57*level
+
+def GetDestroy(level,ispreseason):
+    destroy=0
+    if ispreseason:
+        destroy=0.0
+    else :
+        destroy=0.8*(level-1)
+    return destroy
+
+def GetCriSuccess(level):
+    if level <=29 :
+        cri_success=0.05*(30-level)
+    else :
+        cri_success=0.0
+    return cri_success
 
 def get_need(level):
     temp=[0,0,0,0,0,0]
