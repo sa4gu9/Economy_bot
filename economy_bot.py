@@ -1280,7 +1280,7 @@ async def 데이터리셋(ctx,seasoncheck,check=-7000) :
         
     if check==GetSumMoney(ctx)[0]:
         datamanage.datareset(ctx.guild)
-        SeasonChange(checkpreseason,ctx)
+        await SeasonChange(checkpreseason,ctx)
     else :
         await ctx.send("총 경제규모를 입력해주세요.")
 
