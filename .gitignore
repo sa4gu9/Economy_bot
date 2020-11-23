@@ -126,5 +126,4 @@ dmypy.json
 
 data/
 test.py
-default/
 seasoninfo.json
