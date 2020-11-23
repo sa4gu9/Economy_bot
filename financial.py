@@ -5,6 +5,18 @@ import discord
 version="V1.6"
 path="data/"
 
+
+def GetInfo(ctx):
+    file=open(f"data/user_info{ctx.guild.id}","r")
+    lines=file.readlines()
+    file.close()
+    userlist={}
+
+    for line in lines :
+        user=line.split(',')
+        userlist[user[1]]=int(user[3])
+    return userlist
+
 def givemoney(ctx,nickname,moa,mode=None,getlevel=None):
     file=open(f"data/user_info{ctx.guild.id}","r")
     lines=file.readlines()
@@ -66,9 +78,13 @@ async def setluckypang(price,ctx,maxlucky):
         while True :
             usernicks=list(user.keys())
             nickname=random.choice(usernicks)
-            if user[nickname]/sumMoney[0]*100<30 and len(usernicks)>=4:
+            if user[nickname]/sumMoney[0]*100<10 and len(usernicks)>=8:
                 break
-            if user[nickname]/sumMoney[0]*100<55 or len(usernicks)==1:
+            elif user[nickname]/sumMoney[0]*100<20 and len(usernicks)>=6:
+                break
+            elif user[nickname]/sumMoney[0]*100<30 and len(usernicks)>=4:
+                break
+            elif user[nickname]/sumMoney[0]*100<55 or len(usernicks)==1:
                 break
             
         givemoney(ctx,nickname,stack+price)

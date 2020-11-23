@@ -33,7 +33,7 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='$',intents=intents)
 
 token=""
-version="V1.1.7.3"
+version="V1.1.8"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -124,6 +124,8 @@ async def on_ready():
     bot.loop.create_task(job())
 
 async def job() :
+    iswriting=False
+    isgiving=False
     if testmode:
         channel=bot.get_channel(709647685417697372)
     else :
@@ -149,8 +151,64 @@ async def job() :
 
             
         elif ((hour%12==3 or hour%12==9) and second>=0 and second<10 and minute==0):
+            if iswriting:
+                return
+            iswriting=True
             datarecord.RecordData(channel,seasoncheck,testmode)
             await channel.send("통계가 작성되었습니다.")
+            iswriting=False
+        elif hour==5 and minute==0 and second>=0 and second<10:
+            if not isgiving:
+                userlist=financial.GetInfo(channel)
+                minlist=[]
+                maxlist=[]
+                minimum=0
+                maximum=0
+                index=0
+                for key,value in userlist.items():
+                    if index==0:
+                        minimum=int(value)
+                        maximum=int(value)
+                        minlist.append([key,value])
+                        maxlist.append([key,value])
+                    else:
+                        if int(value)>maximum:
+                            maximum=int(value)
+                            maxlist.clear()
+                            maxlist.append([key,value])
+                        elif int(value)==maximum:
+                            maxlist.append([key,value])
+                        elif int(value)<minimum:
+                            minimum=int(value)
+                            minlist.clear()
+                            minlist.append([key,value])
+                        elif int(value)==minimum:
+                            minlist.append([key,value])  
+                    index+=1
+
+                maxstack=0
+                for user in maxlist:
+                    tempstack=-math.floor(user[1]*0.1)
+                    givemoney(channel,user[0],tempstack)
+                    maxstack-=tempstack
+
+                remain=len(minlist)
+
+                for user in minlist:
+                    print(maxstack)
+                    if remain!=1:
+                        willgive=math.floor(maxstack/remain)
+                        maxstack=willgive
+                        givemoney(channel,user[0],willgive)
+                    else:
+                        givemoney(channel,user[0],maxstack)
+                    remain-=1
+                    print(maxstack)
+                    if remain==0:
+                        break
+                await channel.send("자산 분배가 완료되었습니다.")
+            else :
+                return
 
         await asyncio.sleep(10)
 
@@ -161,6 +219,7 @@ async def on_reaction_add(reaction,user) :
     global boxMsg
     global maxlucky
     global ispreseason
+    global advanceForceMsg
     if user.bot :
         return
 
@@ -177,7 +236,7 @@ async def on_reaction_add(reaction,user) :
                 await CheckItem(reaction.message,user)
                 boxMsg.remove(reaction.message.id)
     
-    if reaction.message.id in forceMsg :
+    elif reaction.message.id in forceMsg :
         if user.display_name==reaction.message.content :
             if str(reaction.emoji)=="🔥" or str(reaction.emoji)=="😀" or str(reaction.emoji)=="🔨" or str(reaction.emoji)=="🛡️" or str(reaction.emoji)=="⏩" or str(reaction.emoji)=="⭐" : 
                 await reaction.message.delete()
@@ -202,6 +261,18 @@ async def on_reaction_add(reaction,user) :
             elif str(reaction.emoji)=="⭐":
                 await doforce(reaction.message,user,5,ispreseason,maxlucky)
                 forceMsg.remove(reaction.message.id)
+
+    elif reaction.message.id in advanceForceMsg :
+        if str(reaction.emoji)=="😀" or str(reaction.emoji)=="🔨"  : 
+                await reaction.message.delete()
+        if str(reaction.emoji)=="🔨":
+            await doforce(reaction.message,user,1,ispreseason,maxlucky,False,True)
+            advanceForceMsg.remove(reaction.message.id)
+        elif str(reaction.emoji)=="😀":
+            checkpre=await reinforce.sellforce(reaction.message,user,True)
+            advanceForceMsg.remove(reaction.message.id)
+            if checkpre:
+                SeasonChange(checkpre)
 
             
             
@@ -304,7 +375,7 @@ def get_chance_multiple(mode) :
         chance=60
         multiple=2
     elif mode==6:
-        chance=60
+        chance=45
         multiple=2
     elif mode==7 :
         chance=50
@@ -391,15 +462,8 @@ async def 베팅(ctx,mode=None,moa=10000) :
 async def 모두(ctx) :
     try :
         sumMoney=GetSumMoney(ctx)
-        file=open(f"{datapath}user_info{ctx.guild.id}","r")
-        lines=file.readlines()
-        file.close()
-        userlist={}
+        userlist=financial.GetInfo(ctx)
         showtext="```"
-
-        for line in lines :
-            user=line.split(',')
-            userlist[user[1]]=int(user[3])
 
 
         for key,value in userlist.items():
@@ -670,41 +734,69 @@ async def 닉네임(ctx):
     await ctx.send(f"{ctx.author.display_name}의 닉네임은 {nickname}입니다.")
 
 
+
+advanceForceMsg=[]
+
+@bot.command()
+async def 고급강화(ctx,level=None):
+    if not level:
+        global forceMsg
+        embed=discord.Embed(title="고급 강화",description="시즌을 끝내는 새로운 방법?")
+        embed.add_field(name="강화 :hammer:",value="강화를 합니다.")
+        embed.add_field(name="판매 :grinning:",value="판매를 합니다.")
+        msg=await ctx.send(embed=embed,content=ctx.author.display_name)
+        advanceForceMsg.append(msg.id)
+        emojilist=["🔨","😀"]
+        for emoji in emojilist :
+            if msg:
+                await msg.add_reaction(emoji)
+        return
+    else : 
+        level=int(level)
+        if level<1 or level>12 :
+            await ctx.send("1~12강 확률을 볼 수 있습니다.")
+        else :
+            rein=reinforce
+            need=rein.get_need(level,True)
+            fail=rein.get_fail(level,True)
+            destroy=rein.GetDestroy(level,ispreseason,True)
+            success=rein.GetSuccess(level,True)
+            criSuccess=rein.GetCriSuccess(level,True)
+            notChange=100-fail-destroy-success-criSuccess
+            await ctx.send(f"크리티컬 성공 확률 : {'%.2f'%criSuccess}%\n성공 확률 : {'%.2f'%success}%\n유지 확률 : {'%.2f'%notChange}%\n단계 하락 확률 : {'%.2f'%fail}%\n파괴 확률 : {'%.2f'%destroy}%\n비용 : {need}모아")
+
+
 @bot.command()
 async def 강화(ctx,level=None) : 
-    try :
-        if not level:
-            global forceMsg
-            embed=discord.Embed(title="강화",description="36강을 판매하면 현재 시즌 종료")
-            embed.add_field(name="강화 :hammer:",value="강화를 합니다.")
-            embed.add_field(name="판매 :grinning:",value="판매를 합니다.")
-            embed.add_field(name="강화x3 :fire:",value="강화를 3번 합니다.")
-            embed.add_field(name="파괴방지 강화 :shield:",value="파괴방지 후 강화를 합니다.(비용 1.1배)")
-            embed.add_field(name="4렙업 :fast_forward:",value="성공시 4렙, 크리티컬 성공시 6렙을 올립니다.(비용 3배)")
-            embed.add_field(name="95%로 강화 :star:",value="95% 확률로 업그레이드에 성공합니다. 단,5% 확률로 파괴될 수 있습니다.(비용 10배)")
-            msg=await ctx.send(embed=embed,content=ctx.author.display_name)
-            forceMsg.append(msg.id)
-            emojilist=["🔨","😀","🔥","🛡️","⏩","⭐"]
-            for emoji in emojilist :
-                if msg:
-                    await msg.add_reaction(emoji)
-            return
-        else : 
-            level=int(level)
-            if level<1 or level>35 :
-                await ctx.send("1~35강 확률을 볼 수 있습니다.")
-            else :
-                rein=reinforce
-                need=rein.get_need(level)
-                fail=rein.get_fail(level)
-                destroy=rein.GetDestroy(level,ispreseason)
-                success=rein.GetSuccess(level)
-                criSuccess=rein.GetCriSuccess(level)
-                notChange=100-fail-destroy-success-criSuccess
-                await ctx.send(f"크리티컬 성공 확률 : {'%.2f'%criSuccess}%\n성공 확률 : {'%.2f'%success}%\n유지 확률 : {'%.2f'%notChange}%\n단계 하락 확률 : {'%.2f'%fail}%\n파괴 확률 : {'%.2f'%destroy}%\n비용 : {need}모아")
-
-    except Exception as e :
-        await ctx.send(e)
+    if not level:
+        global forceMsg
+        embed=discord.Embed(title="강화",description="36강을 판매하면 현재 시즌 종료")
+        embed.add_field(name="강화 :hammer:",value="강화를 합니다.")
+        embed.add_field(name="판매 :grinning:",value="판매를 합니다.")
+        embed.add_field(name="강화x3 :fire:",value="강화를 3번 합니다.")
+        embed.add_field(name="파괴방지 강화 :shield:",value="파괴방지 후 강화를 합니다.(비용 1.1배)")
+        embed.add_field(name="4렙업 :fast_forward:",value="성공시 4렙, 크리티컬 성공시 6렙을 올립니다.(비용 3배)")
+        embed.add_field(name="95%로 강화 :star:",value="95% 확률로 업그레이드에 성공합니다. 단,5% 확률로 파괴될 수 있습니다.(비용 10배)")
+        msg=await ctx.send(embed=embed,content=ctx.author.display_name)
+        forceMsg.append(msg.id)
+        emojilist=["🔨","😀","🔥","🛡️","⏩","⭐"]
+        for emoji in emojilist :
+            if msg:
+                await msg.add_reaction(emoji)
+        return
+    else : 
+        level=int(level)
+        if level<1 or level>35 :
+            await ctx.send("1~35강 확률을 볼 수 있습니다.")
+        else :
+            rein=reinforce
+            need=rein.get_need(level)
+            fail=rein.get_fail(level)
+            destroy=rein.GetDestroy(level,ispreseason)
+            success=rein.GetSuccess(level)
+            criSuccess=rein.GetCriSuccess(level)
+            notChange=100-fail-destroy-success-criSuccess
+            await ctx.send(f"크리티컬 성공 확률 : {'%.2f'%criSuccess}%\n성공 확률 : {'%.2f'%success}%\n유지 확률 : {'%.2f'%notChange}%\n단계 하락 확률 : {'%.2f'%fail}%\n파괴 확률 : {'%.2f'%destroy}%\n비용 : {need}모아")
 
 
 
@@ -800,6 +892,11 @@ async def 자산이전(ctx,nickname1,nickname2,moa):
 @bot.command()
 async def 강화구매(ctx,level=None):
     await buyforce(ctx,level)
+
+@commands.cooldown(1, 5, commands.BucketType.user)
+@bot.command()
+async def 고급강화구매(ctx,level=None):
+    await buyforce(ctx,level,True)
 
 
 async def BuyBox(message,reuser):
