@@ -1284,7 +1284,7 @@ async def 데이터리셋(ctx,seasoncheck,check=-7000) :
     else :
         await ctx.send("총 경제규모를 입력해주세요.")
 
-def SeasonChange(check,ctx):
+async def SeasonChange(check,ctx):
     if seasoncheck['ispreseason'] :#프리시즌일때
         if check:#프리시즌 전환이면
             seasoncheck['resetcount']+=1 #1을 더한다
