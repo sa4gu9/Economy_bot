@@ -1280,19 +1280,24 @@ async def 데이터리셋(ctx,seasoncheck,check=-7000) :
         
     if check==GetSumMoney(ctx)[0]:
         datamanage.datareset(ctx.guild)
-        SeasonChange(checkpreseason)
+        SeasonChange(checkpreseason,ctx)
     else :
         await ctx.send("총 경제규모를 입력해주세요.")
 
-def SeasonChange(check):
-    if seasoncheck['ispreseason'] :
-        if check:
-            seasoncheck['resetcount']+=1
-        else :
-            seasoncheck['currentseason']+=1
+def SeasonChange(check,ctx):
+    if seasoncheck['ispreseason'] :#프리시즌일때
+        if check:#프리시즌 전환이면
+            seasoncheck['resetcount']+=1 #1을 더한다
+        else :#정규시즌 전환이면
+            seasoncheck['ispreseason']=False#프리시즌을 끈다
             seasoncheck['resetcount']=1
-    else :
-        seasoncheck['resetcount']=1
+    else :#정규시즌일때
+        if check:#프리시즌 전환이면
+            seasoncheck['currentseason']+=1 #시즌1을 더한다
+            seasoncheck['resetcount']=1
+        else:
+            await ctx.send("현재 정규시즌입니다.")
+
 
     seasoncheck['ispreseason'] = check
 
