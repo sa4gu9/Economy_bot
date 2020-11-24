@@ -482,6 +482,3 @@ async def buyforce(ctx,level,isadvance=False):
     except Exception as e :
         await ctx.send(f"{e}\n$강화구매 (레벨)")
         traceback.print_exc()
-
-print(get_need(12,True))
-print(get_price(2,True))

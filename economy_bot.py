@@ -33,12 +33,12 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='$',intents=intents)
 
 token=""
-version="V1.1.8"
+version="V1.1.8.1"
 cancommand=True
 canLotto=True
 getnotice=False
 
-testint=0
+testint=3
 testmode=False
 
 if testint==0:
@@ -248,7 +248,7 @@ async def on_reaction_add(reaction,user) :
                 forceMsg.remove(reaction.message.id)
 
                 if checkpre:
-                    SeasonChange(checkpre)
+                    SeasonChange(checkpre,reaction.message.channel)
             elif str(reaction.emoji)=="🔥":
                 await doforce(reaction.message,user,3,ispreseason,maxlucky)
                 forceMsg.remove(reaction.message.id)
@@ -263,16 +263,17 @@ async def on_reaction_add(reaction,user) :
                 forceMsg.remove(reaction.message.id)
 
     elif reaction.message.id in advanceForceMsg :
-        if str(reaction.emoji)=="😀" or str(reaction.emoji)=="🔨"  : 
+        if user.display_name==reaction.message.content :
+            if str(reaction.emoji)=="😀" or str(reaction.emoji)=="🔨"  : 
                 await reaction.message.delete()
-        if str(reaction.emoji)=="🔨":
-            await doforce(reaction.message,user,1,ispreseason,maxlucky,False,True)
-            advanceForceMsg.remove(reaction.message.id)
-        elif str(reaction.emoji)=="😀":
-            checkpre=await reinforce.sellforce(reaction.message,user,True)
-            advanceForceMsg.remove(reaction.message.id)
-            if checkpre:
-                SeasonChange(checkpre)
+            if str(reaction.emoji)=="🔨":
+                await doforce(reaction.message,user,1,ispreseason,maxlucky,False,True)
+                advanceForceMsg.remove(reaction.message.id)
+            elif str(reaction.emoji)=="😀":
+                checkpre=await reinforce.sellforce(reaction.message,user,True)
+                advanceForceMsg.remove(reaction.message.id)
+                if checkpre:
+                    SeasonChange(checkpre,reaction.message.channel)
 
             
             
@@ -740,7 +741,7 @@ advanceForceMsg=[]
 @bot.command()
 async def 고급강화(ctx,level=None):
     if not level:
-        global forceMsg
+        global advanceForceMsg
         embed=discord.Embed(title="고급 강화",description="시즌을 끝내는 새로운 방법?")
         embed.add_field(name="강화 :hammer:",value="강화를 합니다.")
         embed.add_field(name="판매 :grinning:",value="판매를 합니다.")
