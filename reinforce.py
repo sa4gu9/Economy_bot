@@ -62,8 +62,8 @@ async def doforce(message,reuser,mode,ispreseason,maxlucky,useitem=False,isAdvan
                 nickname=user_info[1]
         print(userlist)
         if isAdvance:
-            if str(reuser.id) in userhave.keys():
-                level=userhave[str(reuser.id)]
+            if str(reuser.id) in userlist.keys():
+                level=userlist[str(reuser.id)]
             else:
                 return
 
