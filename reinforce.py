@@ -10,7 +10,7 @@ import financial
 import traceback
 import datarecord
 
-version="V1.9"
+version="V2.0"
 
 async def doforce(message,reuser,mode,ispreseason,maxlucky,useitem=False,isAdvance=False):
     maxlevel=GetMaxLevel(isAdvance)
@@ -288,8 +288,11 @@ async def sellforce(message,reuser,isAdvance=False) :
             nickname=user_info[1]
             level=int(user_info[4])
     
-    if str(reuser.id) in userhave.keys() and isAdvance:
-        level=userhave[str(reuser.id)]
+    if isAdvance:
+        if str(reuser.id) in userhave.keys():
+            level=userhave[str(reuser.id)]
+        else:
+            return
 
     if level<=1 :
         await reuser.send(f"{head}의문의 물건이 +1이거나 가지고 있지 않습니다.")
@@ -316,6 +319,7 @@ async def sellforce(message,reuser,isAdvance=False) :
     with open(filename,"r") as forceFile :
         forceSale=json.load(forceFile)
 
+    print(userhave)
     userhave.pop(str(reuser.id))
 
     
