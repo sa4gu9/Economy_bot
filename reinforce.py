@@ -10,7 +10,7 @@ import financial
 import traceback
 import datarecord
 
-version="V2.0"
+version="V2.1"
 
 async def doforce(message,reuser,mode,ispreseason,maxlucky,useitem=False,isAdvance=False):
     maxlevel=GetMaxLevel(isAdvance)
@@ -61,10 +61,11 @@ async def doforce(message,reuser,mode,ispreseason,maxlucky,useitem=False,isAdvan
                 moa=int(user_info[3])
                 nickname=user_info[1]
         print(userlist)
-        if isAdvance :
-            if str(reuser.id) in userlist.keys():
-                level=int(userlist[str(reuser.id)])
-                print(level)
+        if isAdvance:
+            if str(reuser.id) in userhave.keys():
+                level=userhave[str(reuser.id)]
+            else:
+                return
 
         if level == 0 :
             await ctx.send("의문의 물건을 가지고 있지 않습니다.")
