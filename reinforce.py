@@ -429,11 +429,14 @@ async def buyforce(ctx,level,isadvance=False):
         if isadvance :
             with open("data/advforceuser.json","r") as forceFile:
                 userforce=json.load(forceFile)
+            if str(ctx.author.id) in userforce.keys():
+                mylevel=userforce[str(ctx.author.id)]
+            else :
+                mylevel=0
                 
 
 
-        if str(ctx.author.id) in userforce.keys():
-            mylevel=userforce[str(ctx.author.id)]       
+             
 
                     
 
