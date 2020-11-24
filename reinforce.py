@@ -10,7 +10,7 @@ import financial
 import traceback
 import datarecord
 
-version="V1.8"
+version="V1.9"
 
 async def doforce(message,reuser,mode,ispreseason,maxlucky,useitem=False,isAdvance=False):
     maxlevel=GetMaxLevel(isAdvance)
@@ -160,7 +160,7 @@ async def doforce(message,reuser,mode,ispreseason,maxlucky,useitem=False,isAdvan
         else :
             if isAdvance :
                 userlist.pop(str(reuser.id))
-                file_text=file_text.replace(f"{reuser.id},{'%010d'%moa}",f"{reuser.id},{'%010d'%(moa-need)}")
+                givemoney(message.channel,nickname,-need)
             else :
                 file_text=file_text.replace(f"{reuser.id},{'%010d'%moa},{level}",f"{reuser.id},{'%010d'%(moa-need)},0")
             await ctx.send(f"{nickname}, {head}의문의 물건 +{level} 파괴...")
