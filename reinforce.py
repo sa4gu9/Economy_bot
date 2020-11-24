@@ -120,7 +120,7 @@ async def doforce(message,reuser,mode,ispreseason,maxlucky,useitem=False,isAdvan
             await ctx.send(f"{need-moa}모아가 부족합니다.")
             break
         
-        
+            
         
         result=random.random()*100
 
@@ -144,6 +144,7 @@ async def doforce(message,reuser,mode,ispreseason,maxlucky,useitem=False,isAdvan
         head=""
         if isAdvance:
             head="고오급 "
+            givemoney(message.channel,nickname,-need)
 
         if change!=-10 :
             if isAdvance :
@@ -161,7 +162,6 @@ async def doforce(message,reuser,mode,ispreseason,maxlucky,useitem=False,isAdvan
         else :
             if isAdvance :
                 userlist.pop(str(reuser.id))
-                givemoney(message.channel,nickname,-need)
             else :
                 file_text=file_text.replace(f"{reuser.id},{'%010d'%moa},{level}",f"{reuser.id},{'%010d'%(moa-need)},0")
             await ctx.send(f"{nickname}, {head}의문의 물건 +{level} 파괴...")
