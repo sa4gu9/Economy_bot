@@ -36,7 +36,11 @@ def AddNickname(seasoncheck,testmode,nickname):
     sheetName=GetSheetName(seasoncheck)
 
     sheet=workfile.worksheet(sheetName)
-    sheet.append_row([nickname])
+    sheet.add_cols(1)
+    colcount=sheet.col_count+1
+    sheet.update_cell(1,colcount,nickname)
+
+    
 
 def RecordData(ctx,seasoncheck,testmode):
     file=open(f"data/user_info{ctx.guild.id}","r")
@@ -53,8 +57,7 @@ def RecordData(ctx,seasoncheck,testmode):
     sheetName=GetSheetName(seasoncheck)
 
     sheet=workfile.worksheet(sheetName)
-    sheet.add_cols(1)
-    index=2
+
 
     nowtime=datetime.datetime.now()
     
@@ -67,9 +70,13 @@ def RecordData(ctx,seasoncheck,testmode):
     minute=nowtime.minute
 
     timestring=f"{year}-{month}-{day} {hour}:{'%02d'%minute}"
-    
-    sheet.update_acell(f"{chr(65+sheet.col_count)}1",timestring)
+    writelist=[timestring]
 
     for value in userlist.values():
-        sheet.update_acell(f"{chr(65+sheet.col_count)}{index}",value)
-        index+=1
+        writelist.append(value)
+
+    sheet.append_row(writelist)
+
+    
+
+    

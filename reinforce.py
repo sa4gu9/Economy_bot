@@ -10,7 +10,6 @@ import financial
 import traceback
 import datarecord
 
-version="V2.1"
 
 async def doforce(message,reuser,mode,ispreseason,maxlucky,useitem=False,isAdvance=False):
     maxlevel=GetMaxLevel(isAdvance)
@@ -496,3 +495,49 @@ async def buyforce(ctx,level,isadvance=False):
     except Exception as e :
         await ctx.send(f"{e}\n$강화구매 (레벨)")
         traceback.print_exc()
+
+
+
+
+
+def TestForce():
+    clevel=1
+    maxlevel=GetMaxLevel(True)
+    totaluse=get_price(clevel,True)[0]
+    trycount=0
+    destroy=0
+    while clevel<maxlevel:
+        f=get_fail(clevel,True)
+        s=GetSuccess(clevel,True)
+        cs=GetCriSuccess(clevel,True)
+        d=GetDestroy(clevel,False,True)
+        nc=100-f-s-cs-d
+        totaluse+=get_need(clevel,True)
+
+        result=random.random()*100
+
+        if result<cs :
+            change=2        
+        elif result<cs + s :
+            change=1
+        elif result<cs+s + nc :
+            change=0
+        elif result < cs + s + nc + f :
+            change=-1
+        else :
+            change=-10
+
+        if change!=-10:
+            clevel+=change
+        else:
+            clevel=1
+            totaluse+=get_price(clevel,True)[0]
+            destroy+=1
+
+        trycount+=1
+        
+
+
+        print(f"trycount:{trycount}  level:{clevel} totaluse:{format(totaluse,',')}    destroy:{destroy}")
+
+TestForce()

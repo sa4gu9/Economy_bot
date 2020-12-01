@@ -33,7 +33,7 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='$',intents=intents)
 
 token=""
-version="V1.1.8.2"
+version="V1.1.8.3"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -400,7 +400,7 @@ def get_chance_multiple(mode) :
 
 @bot.command()
 async def 버전(ctx) :
-    await ctx.send(f"모아봇 버전 : {version}\n강화 : {reinforce.version}\n재산 : {financial.version}")
+    await ctx.send(f"모아봇 버전 : {version}")
 
 @bot.command()
 async def 시즌(ctx) :

@@ -2,7 +2,6 @@ import asyncio
 import random
 import discord
 
-version="V1.6"
 path="data/"
 
 
