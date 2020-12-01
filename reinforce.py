@@ -539,5 +539,3 @@ def TestForce():
 
 
         print(f"trycount:{trycount}  level:{clevel} totaluse:{format(totaluse,',')}    destroy:{destroy}")
-
-TestForce()
