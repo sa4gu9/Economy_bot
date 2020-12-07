@@ -33,12 +33,12 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='$',intents=intents)
 
 token=""
-version="V1.1.8.3"
+version="V1.1.8.4"
 cancommand=True
 canLotto=True
 getnotice=False
 
-testint=0
+testint=1
 testmode=False
 
 if testint==0:
@@ -135,7 +135,7 @@ async def job() :
         hour=currentTime.hour
         minute=currentTime.minute
         second=currentTime.second
-        weekday=currentTime.weekday
+        weekday=currentTime.weekday()
         
         if (hour==1 and second>=0 and second<10 and minute==0):
             forceSale={}
@@ -148,11 +148,11 @@ async def job() :
                 with open(f"{datapath}forcestore.json","w") as forceFile:
                     json.dump(forceSale,forceFile)
                 await channel.send("의문의 물건 +1의 남은 개수가 100개가 되었습니다.")
-
-            if weekday==1 or weekday==4:
+            if weekday==0 or weekday==3:
+                
                 with open("data/advforcestore.json","r") as forceFile:
                     forceSale=json.load(forceFile)
-
+                print(forceSale)
 
                 if forceSale["1"]<50 :
                     forceSale["1"]=50
