@@ -375,9 +375,11 @@ def get_price(level,isadv=False) :
 
 async def buyforce(ctx,level,isadvance=False):
     try :
+        name=""
         forceSale={}
         userforce={}
         if isadvance:
+            name="고오급 "
             with open("data/advforcestore.json","r") as forceFile:
                 forceSale=json.load(forceFile)
         else :
@@ -388,7 +390,7 @@ async def buyforce(ctx,level,isadvance=False):
         
         sale=False
         chour=datetime.datetime.now().time().hour
-        if (datetime.datetime.now().weekday()==5 or datetime.datetime.now().weekday()==6) and (chour==13 or chour==21 or chour==17):
+        if (chour==13 or chour==21 or chour==17):
             sale=True
 
 
@@ -487,7 +489,7 @@ async def buyforce(ctx,level,isadvance=False):
             with open("data/advforceuser.json","w") as forceFile:
                 json.dump(userforce,forceFile)
 
-        await ctx.send(f"{nickname}, 의문의 물건 +{level} 구매 성공")
+        await ctx.send(f"{nickname}, {name}의문의 물건 +{level} 구매 성공")
 
         
         
