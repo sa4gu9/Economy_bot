@@ -8,7 +8,13 @@ import financial
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='^',intents=intents)
-token="Nzg1NDAyODI0MjU4NzQ4NDM3.X83VYQ.ndbOeUlVf5nvPCawQ3HxqbppF-E"
+
+testint=0
+
+if testint==0:
+    token="Nzg1NzAxNzM4NTAyMDI5MzQz.X87rxA.J8Qlt9Gp6emOGDFk7bQ9INkrRZc"
+if testint==1:
+    token="Nzg1NDAyODI0MjU4NzQ4NDM3.X83VYQ.ndbOeUlVf5nvPCawQ3HxqbppF-E"
 
 def cardpick():
     global card
