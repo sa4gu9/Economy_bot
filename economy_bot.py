@@ -287,12 +287,6 @@ async def on_reaction_add(reaction,user) :
                     SeasonChange(checkpre,reaction.message.channel)
 
             
-            
-
-
-
-
-
 
 
 @commands.cooldown(1, 2, commands.BucketType.default)

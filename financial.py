@@ -39,6 +39,12 @@ def givemoney(ctx,nickname,moa,mode=None,getlevel=None):
                 lines[index]=lines[index].replace(f"{getid},{'%010d'%gethavemoney},{level}",f"{getid},{'%010d'%(gethavemoney+int(moa))},0")
             elif mode==2:
                 lines[index]=lines[index].replace(f"{getid},{'%010d'%gethavemoney},{level}",f"{getid},{'%010d'%(gethavemoney-int(moa))},{getlevel}")
+            elif mode==3:
+                if gethavemoney>=int(moa) :
+                    lines[index]=lines[index].replace(f"{getid},{'%010d'%gethavemoney}",f"{getid},{'%010d'%(gethavemoney-int(moa))}")
+                else :
+                    return -1
+            
             #모드가 2일때 의문의 물건 구매
         
         writetext+=lines[index]
