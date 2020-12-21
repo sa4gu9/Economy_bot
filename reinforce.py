@@ -12,6 +12,9 @@ import datarecord
 
 
 async def doforce(message,reuser,mode,ispreseason,maxlucky,useitem=False,isAdvance=False):
+    chour=datetime.datetime.now().time().hour
+    day=datetime.datetime.now().weekday()
+
     maxlevel=GetMaxLevel(isAdvance)
     NotDestroy=False
     FastUp=False
@@ -112,7 +115,10 @@ async def doforce(message,reuser,mode,ispreseason,maxlucky,useitem=False,isAdvan
                     else :
                         need*=3
 
-        
+        if mode==1:
+            if day==0 and chour==15 and not isAdvance and level>=25:
+                need=math.floor(need*0.85)
+
         
 
         if need>moa :
@@ -418,7 +424,6 @@ async def buyforce(ctx,level,isadvance=False):
         userfile=open(f"data/user_info{ctx.guild.id}","r")
         userlines=userfile.readlines()
         userfile.close()
-        limit=forceSale.get(level)
 
         for line in userlines :
             user=line.split(',')
@@ -437,6 +442,7 @@ async def buyforce(ctx,level,isadvance=False):
                 
 
 
+        
              
 
                     
@@ -446,12 +452,15 @@ async def buyforce(ctx,level,isadvance=False):
             return
 
         if mylevel>0:
+
             await ctx.send("의문의 물건은 1개만 보유할수 있습니다.")
             return
         
-        if limit<=0:
+        if not str(level) in forceSale.keys():
             await ctx.send(f"의문의 물건 +{level}의 매물이 없습니다.")
             return
+
+
         price=0
         if int(level)>=15 and sale and (not isadvance) :
             price=math.floor(get_price(level)[0]*0.8)

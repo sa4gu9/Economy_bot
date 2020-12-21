@@ -33,7 +33,7 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='$',intents=intents)
 
 token=""
-version="V1.1.8.5"
+version="V1.1.8.6"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -378,8 +378,8 @@ def get_chance_multiple(mode) :
         chance=32
         multiple=3
     elif mode==5 : 
-        chance=60
-        multiple=2
+        chance=16
+        multiple=4
     elif mode==6:
         chance=45
         multiple=2
