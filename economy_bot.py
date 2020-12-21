@@ -33,7 +33,7 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='$',intents=intents)
 
 token=""
-version="V1.1.8.6"
+version="V1.1.8.7"
 cancommand=True
 canLotto=True
 getnotice=False

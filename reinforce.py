@@ -13,7 +13,6 @@ import datarecord
 
 async def doforce(message,reuser,mode,ispreseason,maxlucky,useitem=False,isAdvance=False):
     chour=datetime.datetime.now().time().hour
-    day=datetime.datetime.now().weekday()
 
     maxlevel=GetMaxLevel(isAdvance)
     NotDestroy=False
@@ -116,7 +115,7 @@ async def doforce(message,reuser,mode,ispreseason,maxlucky,useitem=False,isAdvan
                         need*=3
 
         if mode==1:
-            if day==0 and chour==15 and not isAdvance and level>=25:
+            if chour==15 and not isAdvance and level>=25:
                 need=math.floor(need*0.85)
 
         
@@ -326,7 +325,8 @@ async def sellforce(message,reuser,isAdvance=False) :
         forceSale=json.load(forceFile)
 
     print(userhave)
-    userhave.pop(str(reuser.id))
+    if isAdvance:
+        userhave.pop(str(reuser.id))
 
     
 
