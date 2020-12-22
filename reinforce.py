@@ -117,6 +117,9 @@ async def doforce(message,reuser,mode,ispreseason,maxlucky,useitem=False,isAdvan
         if mode==1:
             if chour==15 and not isAdvance and level>=25:
                 need=math.floor(need*0.85)
+            elif chour==15 and isAdvance and level>=7:
+                need=math.floor(need*0.95)
+
 
         
 
@@ -414,7 +417,7 @@ async def buyforce(ctx,level,isadvance=False):
                 showtext+="의문의 물건 +15이상 20% 할인중!\n"
             for key,value in list(sorted(forceSale.items())):
                 price=get_price(key,isadvance)[0]
-                if int(key)>=15:
+                if int(key)>=15 and sale:
                     showtext+=f"{head}의문의 물건 +{key}, {value}개 남음, {math.floor(price*0.8)}모아\n"
                 else:
                     showtext+=f"{head}의문의 물건 +{key}, {value}개 남음, {price}모아\n"

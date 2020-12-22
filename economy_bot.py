@@ -33,7 +33,7 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='$',intents=intents)
 
 token=""
-version="V1.1.8.7"
+version="V1.1.8.8"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -238,6 +238,7 @@ async def on_reaction_add(reaction,user) :
         if user.display_name==reaction.message.content :
             if str(reaction.emoji)=="🎁" or str(reaction.emoji)=="❌" or str(reaction.emoji)=="👜" : 
                 await reaction.message.delete()
+
             if str(reaction.emoji)=="🎁":
                 await BuyBox(reaction.message,user)
                 boxMsg.remove(reaction.message.id)
@@ -251,6 +252,7 @@ async def on_reaction_add(reaction,user) :
         if user.display_name==reaction.message.content :
             if str(reaction.emoji)=="🔥" or str(reaction.emoji)=="😀" or str(reaction.emoji)=="🔨" or str(reaction.emoji)=="🛡️" or str(reaction.emoji)=="⏩" or str(reaction.emoji)=="⭐" : 
                 await reaction.message.delete()
+                
             if str(reaction.emoji)=="🔨":
                 await doforce(reaction.message,user,1,ispreseason,maxlucky)
                 forceMsg.remove(reaction.message.id)
