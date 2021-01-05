@@ -82,10 +82,16 @@ async def 대결(ctx) :
     global nickname
     global channel
 
+    
 
     if process==1 :
-        ctx.author.send("이미 진행중인 경기가 있습니다.")
+        await ctx.author.send("이미 진행중인 경기가 있습니다.")
         return
+
+    if ctx.author.id in matching:
+        await ctx.author.send("이미 매칭중입니다.")
+        return
+        
     matching.append(ctx.author.id)
     if len(matching)<2 :
         await ctx.author.send("1대1 대결 매칭중입니다...")

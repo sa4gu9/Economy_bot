@@ -33,7 +33,7 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='$',intents=intents)
 
 token=""
-version="V1.1.8.8"
+version="V1.1.8.9"
 cancommand=True
 canLotto=True
 getnotice=False
@@ -168,7 +168,7 @@ async def job() :
             datarecord.RecordData(channel,seasoncheck,testmode)
             await channel.send("통계가 작성되었습니다.")
             iswriting=False
-        elif hour%12==5 and minute==0 and second>=0 and second<10:
+        elif (hour%12==5 or hour%12==11) minute==0 and second>=0 and second<10:
             if not isgiving:
                 userlist=financial.GetInfo(channel)
                 minlist=[]
