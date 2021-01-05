@@ -168,7 +168,7 @@ async def job() :
             datarecord.RecordData(channel,seasoncheck,testmode)
             await channel.send("통계가 작성되었습니다.")
             iswriting=False
-        elif (hour%12==5 or hour%12==11) minute==0 and second>=0 and second<10:
+        elif (hour%12==5 or hour%12==11) and minute==0 and second>=0 and second<10:
             if not isgiving:
                 userlist=financial.GetInfo(channel)
                 minlist=[]
