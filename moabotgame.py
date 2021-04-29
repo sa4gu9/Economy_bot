@@ -12,9 +12,9 @@ bot = commands.Bot(command_prefix='^',intents=intents)
 testint=0
 
 if testint==0:
-    token="Nzg1NzAxNzM4NTAyMDI5MzQz.X87rxA.J8Qlt9Gp6emOGDFk7bQ9INkrRZc"
+    token="12345nottest"
 if testint==1:
-    token="Nzg1NDAyODI0MjU4NzQ4NDM3.X83VYQ.ndbOeUlVf5nvPCawQ3HxqbppF-E"
+    token="12345test"
 
 def cardpick():
     global card
