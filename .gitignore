@@ -3,6 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+blackword.txt
+
 # C extensions
 *.so
 
@@ -126,4 +128,5 @@ dmypy.json
 
 data/
 test.py
-seasoninfo.json
+token.json
+spreadjson.json
