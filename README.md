@@ -8,7 +8,8 @@
 
 python, visual studio code
 
-GnK_Bot에서 경제 관련 기능을 따로 빼와서 만든 봇
+GnK_Bot에서 경제 관련 기능을 따로 빼와서 만든 봇  
+GnK_Bot -- Economy_bot
 
 ## 느낀점
 
